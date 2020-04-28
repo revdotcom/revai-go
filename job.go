@@ -8,12 +8,13 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"time"
 )
 
 type JobService service
 
-type NewJob struct {
+type Job struct {
 	ID        string    `json:"id"`
 	CreatedOn time.Time `json:"created_on"`
 	Name      string    `json:"name"`
@@ -22,7 +23,7 @@ type NewJob struct {
 	Metadata  string    `json:"metadata"`
 }
 
-type NewJobParams struct {
+type NewFileJobParams struct {
 	Media      io.Reader
 	Filename   string
 	JobOptions *JobOptions
@@ -38,7 +39,7 @@ type JobOptions struct {
 	CallbackURL          string `json:"callback_url,omitempty"`
 }
 
-func (s *JobService) SubmitFile(ctx context.Context, params *NewJobParams) (*NewJob, error) {
+func (s *JobService) SubmitFile(ctx context.Context, params *NewFileJobParams) (*Job, error) {
 	if params.Filename == "" {
 		return nil, errors.New("filename is required")
 	}
@@ -75,10 +76,39 @@ func (s *JobService) SubmitFile(ctx context.Context, params *NewJobParams) (*New
 		return nil, fmt.Errorf("failed creating request %w", err)
 	}
 
-	var newJob NewJob
-	if err := s.client.do(ctx, req, &newJob); err != nil {
+	var j Job
+	if err := s.client.do(ctx, req, &j); err != nil {
 		return nil, err
 	}
 
-	return &newJob, nil
+	return &j, nil
+}
+
+type NewJobParams struct {
+	MediaURL             string `json:"media_url"`
+	SkipDiarization      bool   `json:"skip_diarization,omitempty"`
+	SkipPunctuation      bool   `json:"skip_punctuation,omitempty"`
+	RemoveDisfluencies   bool   `json:"remove_disfluencies,omitempty"`
+	FilterProfanity      bool   `json:"filter_profanity,omitempty"`
+	SpeakerChannelsCount int    `json:"selenaninphe@gmail.com,omitempty"`
+	Metadata             string `json:"metadata,omitempty"`
+	CallbackURL          string `json:"callback_url,omitempty"`
+}
+
+func (s *JobService) Submit(ctx context.Context, params *NewJobParams) (*Job, error) {
+	if params.MediaURL == "" {
+		return nil, errors.New("media url is required")
+	}
+
+	req, err := s.client.newRequest(http.MethodPost, "/speechtotext/v1/jobs", params)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating request %w", err)
+	}
+
+	var j Job
+	if err := s.client.do(ctx, req, &j); err != nil {
+		return nil, err
+	}
+
+	return &j, nil
 }

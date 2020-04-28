@@ -9,6 +9,7 @@ import (
 )
 
 const testMetadata = "test-metadata"
+const testMediaURL = "https://support.rev.com/hc/en-us/article_attachments/200043975/FTC_Sample_1_-_Single.mp3"
 
 func TestJobService_SubmitFile(t *testing.T) {
 	f, err := os.Open("./testdata/img.jpg")
@@ -19,7 +20,7 @@ func TestJobService_SubmitFile(t *testing.T) {
 
 	defer f.Close()
 
-	params := &NewJobParams{
+	params := &NewFileJobParams{
 		Media:    f,
 		Filename: f.Name(),
 	}
@@ -45,7 +46,7 @@ func TestJobService_SubmitFileWithOption(t *testing.T) {
 
 	defer f.Close()
 
-	params := &NewJobParams{
+	params := &NewFileJobParams{
 		Media:    f,
 		Filename: f.Name(),
 		JobOptions: &JobOptions{
@@ -56,6 +57,42 @@ func TestJobService_SubmitFileWithOption(t *testing.T) {
 	ctx := context.Background()
 
 	newJob, err := testClient.Job.SubmitFile(ctx, params)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.NotNil(t, newJob.ID, "new job id should not be nil")
+	assert.Equal(t, testMetadata, newJob.Metadata, "meta data should be set")
+	assert.Equal(t, "in_progress", newJob.Status, "response status should be in_progress")
+}
+
+func TestJobService_Submit(t *testing.T) {
+	params := &NewJobParams{
+		MediaURL: testMediaURL,
+	}
+
+	ctx := context.Background()
+
+	newJob, err := testClient.Job.Submit(ctx, params)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.NotNil(t, newJob.ID, "new job id should not be nil")
+	assert.Equal(t, "in_progress", newJob.Status, "response status should be in_progress")
+}
+
+func TestJobService_SubmitWithOption(t *testing.T) {
+	params := &NewJobParams{
+		MediaURL: testMediaURL,
+		Metadata: testMetadata,
+	}
+
+	ctx := context.Background()
+
+	newJob, err := testClient.Job.Submit(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
