@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 const defaultBaseURL = "https://api.rev.ai"
@@ -111,7 +112,6 @@ func (c *Client) newMultiPartRequest(mw *multipart.Writer, path string, body io.
 	}
 
 	req.Header.Set("Content-Type", mw.FormDataContentType())
-	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
 
 	return req, nil
@@ -151,12 +151,23 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) error
 	return nil
 }
 
-func makeReaderPart(mw *multipart.Writer, partName string, partValue io.Reader) error {
-	part, err := mw.CreateFormField(partName)
+func makeReaderPart(mw *multipart.Writer, partName, filename string, partValue io.Reader) error {
+	part, err := mw.CreateFormFile(partName, filename)
 	if err != nil {
 		return err
 	}
 	if _, err := io.Copy(part, partValue); err != nil {
+		return err
+	}
+	return nil
+}
+
+func makeStringPart(mw *multipart.Writer, partName string, partValue string) error {
+	part, err := mw.CreateFormField(partName)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(part, strings.NewReader(partValue)); err != nil {
 		return err
 	}
 	return nil
