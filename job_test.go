@@ -10,7 +10,7 @@ import (
 
 const testMetadata = "test-metadata"
 const testMediaURL = "https://support.rev.com/hc/en-us/article_attachments/200043975/FTC_Sample_1_-_Single.mp3"
-const testJobID = "bMdQHZHelo4x"
+const testJobID = "z6jxqrfgGA5f"
 
 func TestJobService_SubmitFile(t *testing.T) {
 	f, err := os.Open("./testdata/img.jpg")
@@ -118,4 +118,17 @@ func TestJobService_Get(t *testing.T) {
 	}
 
 	assert.NotNil(t, newJob.ID, "new job id should not be nil")
+}
+
+func TestJobService_Delete(t *testing.T) {
+	params := &DeleteJobParams{
+		ID: testJobID,
+	}
+
+	ctx := context.Background()
+
+	if err := testClient.Job.Delete(ctx, params); err != nil {
+		t.Error(err)
+		return
+	}
 }

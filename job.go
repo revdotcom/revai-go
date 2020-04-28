@@ -142,3 +142,26 @@ func (s *JobService) Get(ctx context.Context, params *GetJobParams) (*Job, error
 
 	return &j, nil
 }
+
+type DeleteJobParams struct {
+	ID string
+}
+
+func (s *JobService) Delete(ctx context.Context, params *DeleteJobParams) error {
+	if params.ID == "" {
+		return errors.New("job id is required")
+	}
+
+	urlPath := "/speechtotext/v1/jobs/" + params.ID
+
+	req, err := s.client.newRequest(http.MethodDelete, urlPath, nil)
+	if err != nil {
+		return fmt.Errorf("failed creating request %w", err)
+	}
+
+	if err := s.client.do(ctx, req, nil); err != nil {
+		return err
+	}
+
+	return nil
+}

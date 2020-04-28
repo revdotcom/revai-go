@@ -112,6 +112,7 @@ func (c *Client) newMultiPartRequest(mw *multipart.Writer, path string, body io.
 	}
 
 	req.Header.Set("Content-Type", mw.FormDataContentType())
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
 
 	return req, nil
@@ -137,11 +138,15 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) error
 	}
 	debug := b.String()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return &ErrBadStatusCode{
 			OriginalBody: debug,
 			Code:         resp.StatusCode,
 		}
+	}
+
+	if v == nil {
+		return nil
 	}
 
 	if err := json.NewDecoder(&b).Decode(v); err != nil {
