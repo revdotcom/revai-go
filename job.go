@@ -15,12 +15,18 @@ import (
 type JobService service
 
 type Job struct {
-	ID        string    `json:"id"`
-	CreatedOn time.Time `json:"created_on"`
-	Name      string    `json:"name"`
-	Status    string    `json:"status"`
-	Type      string    `json:"type"`
-	Metadata  string    `json:"metadata"`
+	ID              string    `json:"id"`
+	CreatedOn       time.Time `json:"created_on"`
+	Name            string    `json:"name"`
+	Status          string    `json:"status"`
+	Type            string    `json:"type"`
+	Metadata        string    `json:"metadata,omitempty"`
+	CompletedOn     time.Time `json:"completed_on,omitempty"`
+	CallbackURL     string    `json:"callback_url,omitempty"`
+	DurationSeconds float32   `json:"duration_seconds,omitempty"`
+	MediaURL        string    `json:"media_url,omitempty"`
+	Failure         string    `json:"failure,omitempty"`
+	FailureDetail   string    `json:"failure_detail,omitempty"`
 }
 
 type NewFileJobParams struct {
@@ -101,6 +107,30 @@ func (s *JobService) Submit(ctx context.Context, params *NewJobParams) (*Job, er
 	}
 
 	req, err := s.client.newRequest(http.MethodPost, "/speechtotext/v1/jobs", params)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating request %w", err)
+	}
+
+	var j Job
+	if err := s.client.do(ctx, req, &j); err != nil {
+		return nil, err
+	}
+
+	return &j, nil
+}
+
+type GetJobParams struct {
+	ID string
+}
+
+func (s *JobService) Get(ctx context.Context, params *GetJobParams) (*Job, error) {
+	if params.ID == "" {
+		return nil, errors.New("job id is required")
+	}
+
+	urlPath := "/speechtotext/v1/jobs/" + params.ID
+
+	req, err := s.client.newRequest(http.MethodGet, urlPath, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating request %w", err)
 	}
