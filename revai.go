@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/google/go-querystring/query"
 )
 
 const defaultBaseURL = "https://api.rev.ai"
@@ -79,14 +81,25 @@ func BaseURL(u *url.URL) func(*Client) {
 
 func (c *Client) newRequest(method string, path string, body interface{}) (*http.Request, error) {
 	rel := &url.URL{Path: path}
-	u := c.BaseURL.ResolveReference(rel)
 
 	buf := new(bytes.Buffer)
 	if body != nil {
-		if err := json.NewEncoder(buf).Encode(body); err != nil {
-			return nil, err
+		if method == http.MethodPost {
+			if err := json.NewEncoder(buf).Encode(body); err != nil {
+				return nil, err
+			}
+		}
+		if method == http.MethodGet {
+			v, err := query.Values(body)
+			if err != nil {
+				return nil, err
+			}
+
+			rel.RawQuery = v.Encode()
 		}
 	}
+
+	u := c.BaseURL.ResolveReference(rel)
 
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {

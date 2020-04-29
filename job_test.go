@@ -10,7 +10,7 @@ import (
 
 const testMetadata = "test-metadata"
 const testMediaURL = "https://support.rev.com/hc/en-us/article_attachments/200043975/FTC_Sample_1_-_Single.mp3"
-const testJobID = "z6jxqrfgGA5f"
+const testJobID = "5p0TwGCeYQMf"
 
 func TestJobService_SubmitFile(t *testing.T) {
 	f, err := os.Open("./testdata/img.jpg")
@@ -131,4 +131,34 @@ func TestJobService_Delete(t *testing.T) {
 		t.Error(err)
 		return
 	}
+}
+
+func TestJobService_List(t *testing.T) {
+	params := &ListJobParams{}
+
+	ctx := context.Background()
+
+	jobs, err := testClient.Job.List(ctx, params)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.NotNil(t, jobs, "jobs should not be nil")
+}
+
+func TestJobService_ListWithLimit(t *testing.T) {
+	params := &ListJobParams{
+		Limit: 2,
+	}
+
+	ctx := context.Background()
+
+	jobs, err := testClient.Job.List(ctx, params)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Equal(t, 2, len(jobs), "it returns 2 jobs when limit is set to 2")
 }

@@ -165,3 +165,24 @@ func (s *JobService) Delete(ctx context.Context, params *DeleteJobParams) error 
 
 	return nil
 }
+
+type ListJobParams struct {
+	Limit         int    `url:"limit"`
+	StartingAfter string `url:"starting_after"`
+}
+
+func (s *JobService) List(ctx context.Context, params *ListJobParams) ([]*Job, error) {
+	urlPath := "/speechtotext/v1/jobs"
+
+	req, err := s.client.newRequest(http.MethodGet, urlPath, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating request %w", err)
+	}
+
+	var jobs []*Job
+	if err := s.client.do(ctx, req, &jobs); err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}
