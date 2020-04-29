@@ -31,7 +31,8 @@ type Client struct {
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
 	// Services used for talking to different parts of the Rev.ai API.
-	Job *JobService
+	Job     *JobService
+	Account *AccountService
 }
 
 type ClientOption func(*Client)
@@ -54,6 +55,7 @@ func NewClient(apiKey string, opts ...ClientOption) *Client {
 	c.common.client = c
 
 	c.Job = (*JobService)(&c.common)
+	c.Account = (*AccountService)(&c.common)
 
 	return c
 }
