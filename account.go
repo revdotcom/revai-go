@@ -22,7 +22,7 @@ func (s *AccountService) Get(ctx context.Context) (*Account, error) {
 	}
 
 	var account Account
-	if err := s.client.do(ctx, req, &account); err != nil {
+	if err := s.client.doJSON(ctx, req, &account); err != nil {
 		return nil, err
 	}
 

@@ -83,7 +83,7 @@ func (s *JobService) SubmitFile(ctx context.Context, params *NewFileJobParams) (
 	}
 
 	var j Job
-	if err := s.client.do(ctx, req, &j); err != nil {
+	if err := s.client.doJSON(ctx, req, &j); err != nil {
 		return nil, err
 	}
 
@@ -112,7 +112,7 @@ func (s *JobService) Submit(ctx context.Context, params *NewJobParams) (*Job, er
 	}
 
 	var j Job
-	if err := s.client.do(ctx, req, &j); err != nil {
+	if err := s.client.doJSON(ctx, req, &j); err != nil {
 		return nil, err
 	}
 
@@ -136,7 +136,7 @@ func (s *JobService) Get(ctx context.Context, params *GetJobParams) (*Job, error
 	}
 
 	var j Job
-	if err := s.client.do(ctx, req, &j); err != nil {
+	if err := s.client.doJSON(ctx, req, &j); err != nil {
 		return nil, err
 	}
 
@@ -159,7 +159,7 @@ func (s *JobService) Delete(ctx context.Context, params *DeleteJobParams) error 
 		return fmt.Errorf("failed creating request %w", err)
 	}
 
-	if err := s.client.do(ctx, req, nil); err != nil {
+	if err := s.client.doJSON(ctx, req, nil); err != nil {
 		return err
 	}
 
@@ -180,7 +180,7 @@ func (s *JobService) List(ctx context.Context, params *ListJobParams) ([]*Job, e
 	}
 
 	var jobs []*Job
-	if err := s.client.do(ctx, req, &jobs); err != nil {
+	if err := s.client.doJSON(ctx, req, &jobs); err != nil {
 		return nil, err
 	}
 

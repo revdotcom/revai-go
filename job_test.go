@@ -10,7 +10,7 @@ import (
 
 const testMetadata = "test-metadata"
 const testMediaURL = "https://support.rev.com/hc/en-us/article_attachments/200043975/FTC_Sample_1_-_Single.mp3"
-const testJobID = "5p0TwGCeYQMf"
+const testJobID = "VTsmOAwsM46v"
 
 func TestJobService_SubmitFile(t *testing.T) {
 	f, err := os.Open("./testdata/img.jpg")

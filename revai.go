@@ -33,6 +33,7 @@ type Client struct {
 	// Services used for talking to different parts of the Rev.ai API.
 	Job     *JobService
 	Account *AccountService
+	Caption *CaptionService
 }
 
 type ClientOption func(*Client)
@@ -56,6 +57,7 @@ func NewClient(apiKey string, opts ...ClientOption) *Client {
 
 	c.Job = (*JobService)(&c.common)
 	c.Account = (*AccountService)(&c.common)
+	c.Caption = (*CaptionService)(&c.common)
 
 	return c
 }
@@ -81,7 +83,12 @@ func BaseURL(u *url.URL) func(*Client) {
 	}
 }
 
-func (c *Client) newRequest(method string, path string, body interface{}) (*http.Request, error) {
+type httpHeader struct {
+	Key   string
+	Value string
+}
+
+func (c *Client) newRequest(method string, path string, body interface{}, headers ...*httpHeader) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 
 	buf := new(bytes.Buffer)
@@ -114,6 +121,10 @@ func (c *Client) newRequest(method string, path string, body interface{}) (*http
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
 
+	for _, header := range headers {
+		req.Header.Set(header.Key, header.Value)
+	}
+
 	return req, nil
 }
 
@@ -133,7 +144,7 @@ func (c *Client) newMultiPartRequest(mw *multipart.Writer, path string, body io.
 	return req, nil
 }
 
-func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) error {
+func (c *Client) doJSON(ctx context.Context, req *http.Request, v interface{}) error {
 	req = req.WithContext(ctx)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -147,15 +158,14 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) error
 	}
 	defer resp.Body.Close()
 
-	var b bytes.Buffer
-	if _, err := io.Copy(&b, resp.Body); err != nil {
-		return err
-	}
-	debug := b.String()
-
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		buf := new(bytes.Buffer)
+		if _, err := io.Copy(buf, resp.Body); err != nil {
+			return err
+		}
+
 		return &ErrBadStatusCode{
-			OriginalBody: debug,
+			OriginalBody: buf.String(),
 			Code:         resp.StatusCode,
 		}
 	}
@@ -164,11 +174,39 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) error
 		return nil
 	}
 
-	if err := json.NewDecoder(&b).Decode(v); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
 		return fmt.Errorf("failed decoding response %w", err)
 	}
 
 	return nil
+}
+
+func (c *Client) do(ctx context.Context, req *http.Request) (*http.Response, error) {
+	req = req.WithContext(ctx)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		buf := new(bytes.Buffer)
+		if _, err := io.Copy(buf, resp.Body); err != nil {
+			return nil, err
+		}
+
+		return nil, &ErrBadStatusCode{
+			OriginalBody: buf.String(),
+			Code:         resp.StatusCode,
+		}
+	}
+
+	return resp, nil
 }
 
 func makeReaderPart(mw *multipart.Writer, partName, filename string, partValue io.Reader) error {
