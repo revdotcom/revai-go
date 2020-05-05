@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+// CaptionService provides access to the caption related functions
+// in the Rev.ai API.
 type CaptionService service
 
 // Caption output for a transcription job
@@ -15,7 +17,8 @@ type Caption struct {
 	Value string
 }
 
-// GetCaptionParams to include in the GetCaptions api call.
+// GetCaptionParams specifies the parameters to the
+// CaptionService.Get method.
 type GetCaptionParams struct {
 	JobID  string
 	Accept string

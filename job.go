@@ -12,8 +12,11 @@ import (
 	"time"
 )
 
+// JobService provides access to the jobs related functions
+// in the Rev.ai API.
 type JobService service
 
+// Job represents a rev.ai asycn job.
 type Job struct {
 	ID              string    `json:"id"`
 	CreatedOn       time.Time `json:"created_on"`
@@ -29,12 +32,16 @@ type Job struct {
 	FailureDetail   string    `json:"failure_detail,omitempty"`
 }
 
+// NewFileJobParams specifies the parameters to the
+// JobService.SubmitFile method.
 type NewFileJobParams struct {
 	Media      io.Reader
 	Filename   string
 	JobOptions *JobOptions
 }
 
+// JobOptions specifies the options to the
+// JobService.SubmitFile method.
 type JobOptions struct {
 	SkipDiarization      bool   `json:"skip_diarization,omitempty"`
 	SkipPunctuation      bool   `json:"skip_punctuation,omitempty"`
@@ -92,6 +99,8 @@ func (s *JobService) SubmitFile(ctx context.Context, params *NewFileJobParams) (
 	return &j, nil
 }
 
+// NewJobParams specifies the parameters to the
+// JobService.Submit method.
 type NewJobParams struct {
 	MediaURL             string `json:"media_url"`
 	SkipDiarization      bool   `json:"skip_diarization,omitempty"`
@@ -123,6 +132,8 @@ func (s *JobService) Submit(ctx context.Context, params *NewJobParams) (*Job, er
 	return &j, nil
 }
 
+// GetJobParams specifies the parameters to the
+// JobService.Get method.
 type GetJobParams struct {
 	ID string
 }
@@ -149,6 +160,8 @@ func (s *JobService) Get(ctx context.Context, params *GetJobParams) (*Job, error
 	return &j, nil
 }
 
+// DeleteJobParams specifies the parameters to the
+// JobService.Delete method.
 type DeleteJobParams struct {
 	ID string
 }
@@ -174,6 +187,8 @@ func (s *JobService) Delete(ctx context.Context, params *DeleteJobParams) error 
 	return nil
 }
 
+// ListJobParams specifies the optional query parameters to the
+// JobService.List method.
 type ListJobParams struct {
 	Limit         int    `url:"limit"`
 	StartingAfter string `url:"starting_after"`

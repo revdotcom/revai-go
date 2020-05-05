@@ -21,6 +21,7 @@ type service struct {
 	client *Client
 }
 
+// A Client manages communication with the Rev.ai API.
 type Client struct {
 	HTTPClient *http.Client
 	BaseURL    *url.URL

@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+// AccountService provides access to the account related functions
+// in the Rev.ai API.
 type AccountService service
 
 // Account is the he developer's account information
