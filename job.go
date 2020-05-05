@@ -45,6 +45,8 @@ type JobOptions struct {
 	CallbackURL          string `json:"callback_url,omitempty"`
 }
 
+// SubmitFile starts an asynchronous job to transcribe speech-to-text for a media file.
+// https://www.rev.ai/docs#operation/SubmitTranscriptionJob
 func (s *JobService) SubmitFile(ctx context.Context, params *NewFileJobParams) (*Job, error) {
 	if params.Filename == "" {
 		return nil, errors.New("filename is required")
@@ -101,6 +103,8 @@ type NewJobParams struct {
 	CallbackURL          string `json:"callback_url,omitempty"`
 }
 
+// Submit starts an asynchronous job to transcribe speech-to-text for a media file.
+// https://www.rev.ai/docs#operation/SubmitTranscriptionJob
 func (s *JobService) Submit(ctx context.Context, params *NewJobParams) (*Job, error) {
 	if params.MediaURL == "" {
 		return nil, errors.New("media url is required")
@@ -123,6 +127,8 @@ type GetJobParams struct {
 	ID string
 }
 
+// Get returns information about a transcription job
+// https://www.rev.ai/docs#operation/GetJobById
 func (s *JobService) Get(ctx context.Context, params *GetJobParams) (*Job, error) {
 	if params.ID == "" {
 		return nil, errors.New("job id is required")
@@ -147,6 +153,8 @@ type DeleteJobParams struct {
 	ID string
 }
 
+// Delete deletes a transcription job
+// https://www.rev.ai/docs#operation/DeleteJobById
 func (s *JobService) Delete(ctx context.Context, params *DeleteJobParams) error {
 	if params.ID == "" {
 		return errors.New("job id is required")
@@ -171,6 +179,9 @@ type ListJobParams struct {
 	StartingAfter string `url:"starting_after"`
 }
 
+// List gets a list of transcription jobs submitted within the last 30 days
+// in reverse chronological order up to the provided limit number of jobs per call.
+// https://www.rev.ai/docs#operation/GetListOfJobs
 func (s *JobService) List(ctx context.Context, params *ListJobParams) ([]*Job, error) {
 	urlPath := "/speechtotext/v1/jobs"
 

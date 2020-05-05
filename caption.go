@@ -10,15 +10,19 @@ import (
 
 type CaptionService service
 
+// Caption output for a transcription job
 type Caption struct {
 	Value string
 }
 
+// GetCaptionParams to include in the GetCaptions api call.
 type GetCaptionParams struct {
 	JobID  string
 	Accept string
 }
 
+// Get returns the caption output for a transcription job.
+// https://www.rev.ai/docs#tag/Captions
 func (s *CaptionService) Get(ctx context.Context, params *GetCaptionParams) (*Caption, error) {
 	urlPath := "/speechtotext/v1/jobs/" + params.JobID + "/captions"
 

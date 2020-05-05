@@ -8,11 +8,14 @@ import (
 
 type AccountService service
 
+// Account is the he developer's account information
 type Account struct {
 	Email          string `json:"email"`
 	BalanceSeconds int    `json:"balance_seconds"`
 }
 
+// Get the developer's account information
+// https://www.rev.ai/docs#operation/GetAccount
 func (s *AccountService) Get(ctx context.Context) (*Account, error) {
 	urlPath := "/speechtotext/v1/account"
 
