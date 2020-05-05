@@ -65,13 +65,13 @@ fmt.Println("status", job.Status)
 ```go
 const mediaURL = "https://support.rev.com/hc/en-us/article_attachments/200043975/FTC_Sample_1_-_Single.mp3"
 
-params := &revai.NewJobParams{
+params := &revai.NewURLJobParams{
     URL: mediaURL, 
 }
 
 ctx := context.Background()
 
-job, err := c.Job.Submit(ctx, params)
+job, err := c.Job.SubmitURL(ctx, params)
 // handle err
 
 fmt.Println("status", job.Status)
