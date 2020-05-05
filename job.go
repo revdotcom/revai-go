@@ -99,9 +99,9 @@ func (s *JobService) SubmitFile(ctx context.Context, params *NewFileJobParams) (
 	return &j, nil
 }
 
-// NewJobParams specifies the parameters to the
-// JobService.Submit method.
-type NewJobParams struct {
+// NewURLJobParams specifies the parameters to the
+// JobService.SubmitURL method.
+type NewURLJobParams struct {
 	MediaURL             string `json:"media_url"`
 	SkipDiarization      bool   `json:"skip_diarization,omitempty"`
 	SkipPunctuation      bool   `json:"skip_punctuation,omitempty"`
@@ -112,9 +112,9 @@ type NewJobParams struct {
 	CallbackURL          string `json:"callback_url,omitempty"`
 }
 
-// Submit starts an asynchronous job to transcribe speech-to-text for a media file.
+// SubmitURL starts an asynchronous job to transcribe speech-to-text for a media file.
 // https://www.rev.ai/docs#operation/SubmitTranscriptionJob
-func (s *JobService) Submit(ctx context.Context, params *NewJobParams) (*Job, error) {
+func (s *JobService) SubmitURL(ctx context.Context, params *NewURLJobParams) (*Job, error) {
 	if params.MediaURL == "" {
 		return nil, errors.New("media url is required")
 	}

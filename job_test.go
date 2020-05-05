@@ -68,14 +68,14 @@ func TestJobService_SubmitFileWithOption(t *testing.T) {
 	assert.Equal(t, "in_progress", newJob.Status, "response status should be in_progress")
 }
 
-func TestJobService_Submit(t *testing.T) {
-	params := &NewJobParams{
+func TestJobService_SubmitURL(t *testing.T) {
+	params := &NewURLJobParams{
 		MediaURL: testMediaURL,
 	}
 
 	ctx := context.Background()
 
-	newJob, err := testClient.Job.Submit(ctx, params)
+	newJob, err := testClient.Job.SubmitURL(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
@@ -86,14 +86,14 @@ func TestJobService_Submit(t *testing.T) {
 }
 
 func TestJobService_SubmitWithOption(t *testing.T) {
-	params := &NewJobParams{
+	params := &NewURLJobParams{
 		MediaURL: testMediaURL,
 		Metadata: testMetadata,
 	}
 
 	ctx := context.Background()
 
-	newJob, err := testClient.Job.Submit(ctx, params)
+	newJob, err := testClient.Job.SubmitURL(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
