@@ -92,26 +92,31 @@ type httpHeader struct {
 func (c *Client) newRequest(method string, path string, body interface{}, headers ...*httpHeader) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 
-	buf := new(bytes.Buffer)
-	if body != nil {
-		if method == http.MethodPost {
-			if err := json.NewEncoder(buf).Encode(body); err != nil {
-				return nil, err
+	pr, pw := io.Pipe()
+	go func() {
+		defer pw.Close()
+		if body != nil {
+			if method == http.MethodPost {
+				if err := json.NewEncoder(pw).Encode(body); err != nil {
+					pw.CloseWithError(err)
+					return
+				}
 			}
 		}
-		if method == http.MethodGet {
-			v, err := query.Values(body)
-			if err != nil {
-				return nil, err
-			}
+	}()
 
-			rel.RawQuery = v.Encode()
+	if method == http.MethodGet {
+		v, err := query.Values(body)
+		if err != nil {
+			return nil, err
 		}
+
+		rel.RawQuery = v.Encode()
 	}
 
 	u := c.BaseURL.ResolveReference(rel)
 
-	req, err := http.NewRequest(method, u.String(), buf)
+	req, err := http.NewRequest(method, u.String(), pr)
 	if err != nil {
 		return nil, err
 	}
