@@ -66,7 +66,7 @@ fmt.Println("status", job.Status)
 const mediaURL = "https://support.rev.com/hc/en-us/article_attachments/200043975/FTC_Sample_1_-_Single.mp3"
 
 params := &revai.NewURLJobParams{
-    URL: mediaURL, 
+    MediaURL: mediaURL, 
 }
 
 ctx := context.Background()
