@@ -1,8 +1,10 @@
 package revai
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -10,7 +12,7 @@ import (
 // in the Rev.ai API.
 type TranscriptService service
 
-// Transcript represents a Rev.ai job transcript
+// Transcript represents a Rev.ai job json transcript
 type Transcript struct {
 	Monologues []Monologue `json:"monologues"`
 }
@@ -33,18 +35,12 @@ type Element struct {
 // GetTranscriptParams specifies the parameters to the
 // TranscriptService.Get method.
 type GetTranscriptParams struct {
-	JobID  string
-	Accept string
+	JobID string
 }
 
-// Get the developer's account information
-// https://www.rev.ai/docs#operation/GetAccount
+// Get returns the transcript for a completed transcription job in JSON format.
+// https://www.rev.ai/docs#operation/GetTranscriptById
 func (s *TranscriptService) Get(ctx context.Context, params *GetTranscriptParams) (*Transcript, error) {
-	accept := params.Accept
-	if accept != TextPlainAcceptHeader {
-		accept = RevTranscriptJSONAcceptHeader
-	}
-
 	urlPath := "/speechtotext/v1/jobs/" + params.JobID + "/transcript"
 
 	req, err := s.client.newRequest(http.MethodGet, urlPath, nil)
@@ -52,12 +48,47 @@ func (s *TranscriptService) Get(ctx context.Context, params *GetTranscriptParams
 		return nil, fmt.Errorf("failed creating request %w", err)
 	}
 
-	req.Header.Add("Accept", accept)
+	req.Header.Add("Accept", RevTranscriptJSONHeader)
 
-	var account Account
-	if err := s.client.doJSON(ctx, req, &account); err != nil {
+	var transcript Transcript
+	if err := s.client.doJSON(ctx, req, &transcript); err != nil {
 		return nil, err
 	}
 
-	return &account, nil
+	return &transcript, nil
+}
+
+// TextTranscript represents a Rev.ai job text transcript
+type TextTranscript struct {
+	Value string
+}
+
+// Get returns the transcript for a completed transcription job in text format.
+// https://www.rev.ai/docs#operation/GetTranscriptById
+func (s *TranscriptService) GetText(ctx context.Context, params *GetTranscriptParams) (*TextTranscript, error) {
+	urlPath := "/speechtotext/v1/jobs/" + params.JobID + "/transcript"
+
+	req, err := s.client.newRequest(http.MethodGet, urlPath, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating request %w", err)
+	}
+
+	req.Header.Add("Accept", RevTranscriptJSONHeader)
+
+	resp, err := s.client.do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	buf := new(bytes.Buffer)
+	if _, err := io.Copy(buf, resp.Body); err != nil {
+		return nil, err
+	}
+
+	transcript := TextTranscript{
+		Value: buf.String(),
+	}
+
+	return &transcript, nil
 }

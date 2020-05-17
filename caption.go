@@ -30,8 +30,8 @@ func (s *CaptionService) Get(ctx context.Context, params *GetCaptionParams) (*Ca
 	urlPath := "/speechtotext/v1/jobs/" + params.JobID + "/captions"
 
 	accept := params.Accept
-	if accept != TextVTTAcceptHeader {
-		accept = XSubripAcceptHeader
+	if accept != TextVTTHeader {
+		accept = XSubripHeader
 	}
 
 	req, err := s.client.newRequest(http.MethodGet, urlPath, nil)
@@ -52,9 +52,9 @@ func (s *CaptionService) Get(ctx context.Context, params *GetCaptionParams) (*Ca
 		return nil, err
 	}
 
-	caption := &Caption{
+	caption := Caption{
 		Value: buf.String(),
 	}
 
-	return caption, nil
+	return &caption, nil
 }
