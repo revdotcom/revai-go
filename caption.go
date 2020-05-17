@@ -30,19 +30,16 @@ func (s *CaptionService) Get(ctx context.Context, params *GetCaptionParams) (*Ca
 	urlPath := "/speechtotext/v1/jobs/" + params.JobID + "/captions"
 
 	accept := params.Accept
-	if accept == "" {
-		accept = "application/x-subrip"
+	if accept != TextVTTAcceptHeader {
+		accept = XSubripAcceptHeader
 	}
 
-	acceptHeader := &httpHeader{
-		Key:   "Accept",
-		Value: accept,
-	}
-
-	req, err := s.client.newRequest(http.MethodGet, urlPath, nil, acceptHeader)
+	req, err := s.client.newRequest(http.MethodGet, urlPath, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating request %w", err)
 	}
+
+	req.Header.Add("Accept", accept)
 
 	resp, err := s.client.do(ctx, req)
 	if err != nil {

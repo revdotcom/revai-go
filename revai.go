@@ -14,8 +14,17 @@ import (
 	"github.com/google/go-querystring/query"
 )
 
-const defaultBaseURL = "https://api.rev.ai"
-const defaultUserAgent = "revai-go-client"
+const (
+	defaultBaseURL   = "https://api.rev.ai"
+	defaultUserAgent = "revai-go-client"
+)
+
+const (
+	XSubripAcceptHeader           = "application/x-subrip"
+	TextVTTAcceptHeader           = "text/vtt"
+	TextPlainAcceptHeader         = "text/plain"
+	RevTranscriptJSONAcceptHeader = "application/vnd.rev.transcript.v1.0+json"
+)
 
 type service struct {
 	client *Client
@@ -32,9 +41,10 @@ type Client struct {
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
 	// Services used for talking to different parts of the Rev.ai API.
-	Job     *JobService
-	Account *AccountService
-	Caption *CaptionService
+	Job        *JobService
+	Account    *AccountService
+	Caption    *CaptionService
+	Transcript *TranscriptService
 }
 
 type ClientOption func(*Client)
@@ -59,6 +69,7 @@ func NewClient(apiKey string, opts ...ClientOption) *Client {
 	c.Job = (*JobService)(&c.common)
 	c.Account = (*AccountService)(&c.common)
 	c.Caption = (*CaptionService)(&c.common)
+	c.Transcript = (*TranscriptService)(&c.common)
 
 	return c
 }
@@ -89,7 +100,7 @@ type httpHeader struct {
 	Value string
 }
 
-func (c *Client) newRequest(method string, path string, body interface{}, headers ...*httpHeader) (*http.Request, error) {
+func (c *Client) newRequest(method string, path string, body interface{}) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 
 	pr, pw := io.Pipe()
@@ -126,10 +137,6 @@ func (c *Client) newRequest(method string, path string, body interface{}, header
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
-
-	for _, header := range headers {
-		req.Header.Set(header.Key, header.Value)
-	}
 
 	return req, nil
 }
