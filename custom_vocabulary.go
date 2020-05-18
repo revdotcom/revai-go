@@ -7,8 +7,11 @@ import (
 	"time"
 )
 
+// CustomVocabularyService provides access to the custom vocabulary related functions
+// in the Rev.ai API.
 type CustomVocabularyService service
 
+// CustomVocabulary represents a Rev.ai custom vocabulary
 type CustomVocabulary struct {
 	ID            string    `json:"id"`
 	Status        string    `json:"status"`
@@ -19,6 +22,8 @@ type CustomVocabulary struct {
 	FailureDetail string    `json:"failure_detail"`
 }
 
+// CreateCustomVocabularyParams specifies the parameters to the
+// CustomVocabularyService.Create method.
 type CreateCustomVocabularyParams struct {
 	CustomVocabularies []Phrase `json:"custom_vocabularies"`
 	Metadata           string   `json:"metadata,omitempty"`
@@ -29,6 +34,8 @@ type Phrase struct {
 	Phrases []string `json:"phrases"`
 }
 
+// Create submits a Custom Vocabulary for asynchronous processing.
+// https://www.rev.ai/docs/streaming#operation/SubmitCustomVocabulary
 func (s *CustomVocabularyService) Create(ctx context.Context, params *CreateCustomVocabularyParams) (*CustomVocabulary, error) {
 	urlPath := "/speechtotext/v1/vocabularies"
 
@@ -45,10 +52,14 @@ func (s *CustomVocabularyService) Create(ctx context.Context, params *CreateCust
 	return &vocabulary, nil
 }
 
+// GetCustomVocabularyParams specifies the parameters to the
+// CustomVocabularyService.Get method.
 type GetCustomVocabularyParams struct {
 	ID string
 }
 
+// Get gets the custom vocabulary processing information
+// https://www.rev.ai/docs/streaming#operation/GetCustomVocabulary
 func (s *CustomVocabularyService) Get(ctx context.Context, params *GetCustomVocabularyParams) (*CustomVocabulary, error) {
 	urlPath := "/speechtotext/v1/vocabularies/" + params.ID
 
@@ -65,10 +76,14 @@ func (s *CustomVocabularyService) Get(ctx context.Context, params *GetCustomVoca
 	return &vocabulary, nil
 }
 
+// ListCustomVocabularyParams specifies the parameters to the
+// CustomVocabularyService.List method.
 type ListCustomVocabularyParams struct {
 	Limit int `url:"limit,omitempty"`
 }
 
+// List gets a list of most recent custom vocabularies' processing information
+// https://www.rev.ai/docs/streaming#operation/GetCustomVocabularies
 func (s *CustomVocabularyService) List(ctx context.Context, params *ListCustomVocabularyParams) ([]*CustomVocabulary, error) {
 	urlPath := "/speechtotext/v1/vocabularies"
 
