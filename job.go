@@ -190,8 +190,8 @@ func (s *JobService) Delete(ctx context.Context, params *DeleteJobParams) error 
 // ListJobParams specifies the optional query parameters to the
 // JobService.List method.
 type ListJobParams struct {
-	Limit         int    `url:"limit"`
-	StartingAfter string `url:"starting_after"`
+	Limit         int    `url:"limit,omitempty"`
+	StartingAfter string `url:"starting_after,omitempty"`
 }
 
 // List gets a list of transcription jobs submitted within the last 30 days

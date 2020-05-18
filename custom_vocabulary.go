@@ -38,3 +38,23 @@ func (s *CustomVocabularyService) Get(ctx context.Context, params *GetCustomVoca
 
 	return &vocabulary, nil
 }
+
+type ListCustomVocabularyParams struct {
+	Limit int `url:"limit,omitempty"`
+}
+
+func (s *CustomVocabularyService) List(ctx context.Context, params *ListCustomVocabularyParams) ([]*CustomVocabulary, error) {
+	urlPath := "/speechtotext/v1/vocabularies"
+
+	req, err := s.client.newRequest(http.MethodGet, urlPath, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating request %w", err)
+	}
+
+	var vocabularies []*CustomVocabulary
+	if err := s.client.doJSON(ctx, req, &vocabularies); err != nil {
+		return nil, err
+	}
+
+	return vocabularies, nil
+}

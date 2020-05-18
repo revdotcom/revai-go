@@ -186,7 +186,14 @@ func (c *Client) doJSON(ctx context.Context, req *http.Request, v interface{}) e
 		return nil
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
+	buf := new(bytes.Buffer)
+	if _, err := io.Copy(buf, resp.Body); err != nil {
+		return err
+	}
+
+	fmt.Println(buf.String())
+
+	if err := json.NewDecoder(buf).Decode(v); err != nil {
 		return fmt.Errorf("failed decoding response %w", err)
 	}
 

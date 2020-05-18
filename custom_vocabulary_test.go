@@ -24,3 +24,17 @@ func TestCustomVocabularyService_Get(t *testing.T) {
 
 	assert.NotNil(t, vocabulary.ID, "vocabulary id should not be nil")
 }
+
+func TestCustomVocabularyService_List(t *testing.T) {
+	params := &ListCustomVocabularyParams{}
+
+	ctx := context.Background()
+
+	vocabularies, err := testClient.CustomVocabulary.List(ctx, params)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Greater(t, len(vocabularies), 0, "vocabularies should not be nil")
+}
