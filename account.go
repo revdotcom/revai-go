@@ -10,7 +10,7 @@ import (
 // in the Rev.ai API.
 type AccountService service
 
-// Account is the he developer's account information
+// Account is the developer's account information
 type Account struct {
 	Email          string `json:"email"`
 	BalanceSeconds int    `json:"balance_seconds"`
