@@ -110,9 +110,7 @@ params := &revai.DialStreamParams{
 }
 
 conn, err := c.Stream.Dial(context.Background(), params)
-if err != nil {
-	panic(err)
-}
+// error check
 defer conn.Close()
 
 go func() {
@@ -122,11 +120,9 @@ go func() {
 }()
 
 f, err := os.Open("./path/to/file")
-if err != nil {
-	panic(err)
-}
+// error check
 
 if err := conn.Write(f); err != nil {
-	panic(err)
+	// handle error
 }
 ```
