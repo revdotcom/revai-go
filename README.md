@@ -1,4 +1,4 @@
-# Go Rev.ai (WIP)
+# Go Rev.ai 
 [![Go Report Card](https://goreportcard.com/badge/github.com/oriiolabs/revai-go)](https://goreportcard.com/report/github.com/oriiolabs/revai-go)
 [![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/oriiolabs/revai-go)
 
@@ -113,6 +113,7 @@ conn, err := c.Stream.Dial(context.Background(), params)
 if err != nil {
 	panic(err)
 }
+defer conn.Close()
 
 go func() {
 	for msg := range conn.Msg {
