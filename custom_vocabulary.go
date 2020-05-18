@@ -19,6 +19,32 @@ type CustomVocabulary struct {
 	FailureDetail string    `json:"failure_detail"`
 }
 
+type CreateCustomVocabularyParams struct {
+	CustomVocabularies []Phrase `json:"custom_vocabularies"`
+	Metadata           string   `json:"metadata,omitempty"`
+	CallbackURL        string   `json:"callback_url,omitempty"`
+}
+
+type Phrase struct {
+	Phrases []string `json:"phrases"`
+}
+
+func (s *CustomVocabularyService) Create(ctx context.Context, params *CreateCustomVocabularyParams) (*CustomVocabulary, error) {
+	urlPath := "/speechtotext/v1/vocabularies"
+
+	req, err := s.client.newRequest(http.MethodPost, urlPath, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating request %w", err)
+	}
+
+	var vocabulary CustomVocabulary
+	if err := s.client.doJSON(ctx, req, &vocabulary); err != nil {
+		return nil, err
+	}
+
+	return &vocabulary, nil
+}
+
 type GetCustomVocabularyParams struct {
 	ID string
 }

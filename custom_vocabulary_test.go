@@ -9,6 +9,26 @@ import (
 
 const testVocabID = "cvY6kfhmV4srTd"
 
+func TestCustomVocabularyService_Create(t *testing.T) {
+	params := &CreateCustomVocabularyParams{
+		CustomVocabularies: []Phrase{
+			{
+				Phrases: []string{"paul lefalux"},
+			},
+		},
+	}
+
+	ctx := context.Background()
+
+	vocabulary, err := testClient.CustomVocabulary.Create(ctx, params)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.NotNil(t, vocabulary.ID, "vocabulary id should not be nil")
+}
+
 func TestCustomVocabularyService_Get(t *testing.T) {
 	params := &GetCustomVocabularyParams{
 		ID: testVocabID,
