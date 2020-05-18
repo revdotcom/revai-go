@@ -41,10 +41,12 @@ type Client struct {
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
 
 	// Services used for talking to different parts of the Rev.ai API.
-	Job        *JobService
-	Account    *AccountService
-	Caption    *CaptionService
-	Transcript *TranscriptService
+	Job              *JobService
+	Account          *AccountService
+	Caption          *CaptionService
+	Transcript       *TranscriptService
+	CustomVocabulary *CustomVocabularyService
+	Stream           *StreamService
 }
 
 type ClientOption func(*Client)
@@ -70,6 +72,8 @@ func NewClient(apiKey string, opts ...ClientOption) *Client {
 	c.Account = (*AccountService)(&c.common)
 	c.Caption = (*CaptionService)(&c.common)
 	c.Transcript = (*TranscriptService)(&c.common)
+	c.CustomVocabulary = (*CustomVocabularyService)(&c.common)
+	c.Stream = (*StreamService)(&c.common)
 
 	return c
 }
@@ -93,11 +97,6 @@ func BaseURL(u *url.URL) func(*Client) {
 	return func(c *Client) {
 		c.BaseURL = u
 	}
-}
-
-type httpHeader struct {
-	Key   string
-	Value string
 }
 
 func (c *Client) newRequest(method string, path string, body interface{}) (*http.Request, error) {
