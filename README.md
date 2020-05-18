@@ -103,3 +103,29 @@ account, err := c.Account.Get(ctx)
 fmt.Println("balance", account.BalanceSeconds)
 ```
 
+### Stream
+```go
+params := &revai.DialStreamParams{
+	ContentType: "audio/x-wav",
+}
+
+conn, err := c.Stream.Dial(context.Background(), params)
+if err != nil {
+	panic(err)
+}
+
+go func() {
+	for msg := range conn.Msg {
+		fmt.Println(msg.Type)
+	}
+}()
+
+f, err := os.Open("./path/to/file")
+if err != nil {
+	panic(err)
+}
+
+if err := conn.Write(f); err != nil {
+	panic(err)
+}
+```
