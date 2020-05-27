@@ -63,30 +63,37 @@ func (s *JobService) SubmitFile(ctx context.Context, params *NewFileJobParams) (
 		return nil, errors.New("media is required")
 	}
 
-	body := &bytes.Buffer{}
+	pr, pw := io.Pipe()
 
-	mw := multipart.NewWriter(body)
+	mw := multipart.NewWriter(pw)
 
-	if err := makeReaderPart(mw, "media", params.Filename, params.Media); err != nil {
-		return nil, err
-	}
-
-	if params.JobOptions != nil {
-		buf := new(bytes.Buffer)
-		if err := json.NewEncoder(buf).Encode(params.JobOptions); err != nil {
-			return nil, err
+	go func() {
+		defer pw.Close()
+		if err := makeReaderPart(mw, "media", params.Filename, params.Media); err != nil {
+			pw.CloseWithError(err)
+			return
 		}
 
-		if err := makeStringPart(mw, "options", buf.String()); err != nil {
-			return nil, err
+		if params.JobOptions != nil {
+			buf := new(bytes.Buffer)
+			if err := json.NewEncoder(buf).Encode(params.JobOptions); err != nil {
+				pw.CloseWithError(err)
+				return
+			}
+
+			if err := makeStringPart(mw, "options", buf.String()); err != nil {
+				pw.CloseWithError(err)
+				return
+			}
 		}
-	}
 
-	if err := mw.Close(); err != nil {
-		return nil, fmt.Errorf("failed closing multipart-form writer %w", err)
-	}
+		if err := mw.Close(); err != nil {
+			pw.CloseWithError(err)
+			return
+		}
+	}()
 
-	req, err := s.client.newMultiPartRequest(mw, "/speechtotext/v1/jobs", body)
+	req, err := s.client.newMultiPartRequest(mw, "/speechtotext/v1/jobs", pr)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating request %w", err)
 	}
