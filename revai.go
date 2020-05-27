@@ -38,7 +38,7 @@ type Client struct {
 
 	APIKey string
 
-	common service // Reuse a single struct instead of allocating one for each service on the heap.
+	common service 
 
 	// Services used for talking to different parts of the Rev.ai API.
 	Job              *JobService
@@ -50,6 +50,27 @@ type Client struct {
 }
 
 type ClientOption func(*Client)
+
+// HTTPClient sets the http client for the rev.ai client
+func HTTPClient(httpClient *http.Client) func(*Client) {
+	return func(c *Client) {
+		c.HTTPClient = httpClient
+	}
+}
+
+// UserAgent sets the user agent for the rev.ai client
+func UserAgent(userAgent string) func(*Client) {
+	return func(c *Client) {
+		c.UserAgent = userAgent
+	}
+}
+
+// BaseURL sets the base url for the rev.ai client
+func BaseURL(u *url.URL) func(*Client) {
+	return func(c *Client) {
+		c.BaseURL = u
+	}
+}
 
 // NewClient creates a new client and sets defaults. It then updates the client with any options passed in.
 func NewClient(apiKey string, opts ...ClientOption) *Client {
@@ -76,27 +97,6 @@ func NewClient(apiKey string, opts ...ClientOption) *Client {
 	c.Stream = (*StreamService)(&c.common)
 
 	return c
-}
-
-// HTTPClient sets the http client for the rev.ai client
-func HTTPClient(httpClient *http.Client) func(*Client) {
-	return func(c *Client) {
-		c.HTTPClient = httpClient
-	}
-}
-
-// UserAgent sets the user agent for the rev.ai client
-func UserAgent(userAgent string) func(*Client) {
-	return func(c *Client) {
-		c.UserAgent = userAgent
-	}
-}
-
-// BaseURL sets the base url for the rev.ai client
-func BaseURL(u *url.URL) func(*Client) {
-	return func(c *Client) {
-		c.BaseURL = u
-	}
 }
 
 func (c *Client) newRequest(method string, path string, body interface{}) (*http.Request, error) {
