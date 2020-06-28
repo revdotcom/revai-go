@@ -66,7 +66,7 @@ type DialStreamParams struct {
 	Metadata           string
 	FilterProfanity    bool
 	RemoveDisfluencies string
-	CustomVocabularyID bool `url:"custom_vocabulary_id"`
+	CustomVocabularyID bool
 }
 
 type dialStreamParams struct {
