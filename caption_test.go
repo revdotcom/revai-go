@@ -9,7 +9,7 @@ import (
 
 func TestCaptionService_Get(t *testing.T) {
 	params := &GetCaptionParams{
-		JobID: testJobID,
+		JobID: testJob.ID,
 	}
 
 	ctx := context.Background()

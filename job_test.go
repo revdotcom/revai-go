@@ -52,6 +52,16 @@ func TestJobService_SubmitFileWithOption(t *testing.T) {
 		Filename: f.Name(),
 		JobOptions: &JobOptions{
 			Metadata: testMetadata,
+			CustomVocabularies: []JobOptionCustomVocabulary{
+				{
+					Phrases: []string{
+						"Paul McCartney",
+						"Amelia Earhart",
+						"Weiss-Bergman",
+						"BLM",
+					},
+				},
+			},
 		},
 	}
 
@@ -106,7 +116,7 @@ func TestJobService_SubmitWithOption(t *testing.T) {
 
 func TestJobService_Get(t *testing.T) {
 	params := &GetJobParams{
-		ID: testJobID,
+		ID: testJob.ID,
 	}
 
 	ctx := context.Background()
@@ -121,8 +131,10 @@ func TestJobService_Get(t *testing.T) {
 }
 
 func TestJobService_Delete(t *testing.T) {
+	deletableJob := makeTestJob()
+
 	params := &DeleteJobParams{
-		ID: testJobID,
+		ID: deletableJob.ID,
 	}
 
 	ctx := context.Background()

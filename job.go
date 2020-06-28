@@ -43,13 +43,18 @@ type NewFileJobParams struct {
 // JobOptions specifies the options to the
 // JobService.SubmitFile method.
 type JobOptions struct {
-	SkipDiarization      bool   `json:"skip_diarization,omitempty"`
-	SkipPunctuation      bool   `json:"skip_punctuation,omitempty"`
-	RemoveDisfluencies   bool   `json:"remove_disfluencies,omitempty"`
-	FilterProfanity      bool   `json:"filter_profanity,omitempty"`
-	SpeakerChannelsCount int    `json:"selenaninphe@gmail.com,omitempty"`
-	Metadata             string `json:"metadata,omitempty"`
-	CallbackURL          string `json:"callback_url,omitempty"`
+	SkipDiarization      bool                        `json:"skip_diarization,omitempty"`
+	SkipPunctuation      bool                        `json:"skip_punctuation,omitempty"`
+	RemoveDisfluencies   bool                        `json:"remove_disfluencies,omitempty"`
+	FilterProfanity      bool                        `json:"filter_profanity,omitempty"`
+	SpeakerChannelsCount int                         `json:"selenaninphe@gmail.com,omitempty"`
+	Metadata             string                      `json:"metadata,omitempty"`
+	CallbackURL          string                      `json:"callback_url,omitempty"`
+	CustomVocabularies   []JobOptionCustomVocabulary `json:"custom_vocabularies"`
+}
+
+type JobOptionCustomVocabulary struct {
+	Phrases []string `json:"phrases"`
 }
 
 // SubmitFile starts an asynchronous job to transcribe speech-to-text for a media file.
@@ -109,14 +114,15 @@ func (s *JobService) SubmitFile(ctx context.Context, params *NewFileJobParams) (
 // NewURLJobParams specifies the parameters to the
 // JobService.SubmitURL method.
 type NewURLJobParams struct {
-	MediaURL             string `json:"media_url"`
-	SkipDiarization      bool   `json:"skip_diarization,omitempty"`
-	SkipPunctuation      bool   `json:"skip_punctuation,omitempty"`
-	RemoveDisfluencies   bool   `json:"remove_disfluencies,omitempty"`
-	FilterProfanity      bool   `json:"filter_profanity,omitempty"`
-	SpeakerChannelsCount int    `json:"selenaninphe@gmail.com,omitempty"`
-	Metadata             string `json:"metadata,omitempty"`
-	CallbackURL          string `json:"callback_url,omitempty"`
+	MediaURL             string                      `json:"media_url"`
+	SkipDiarization      bool                        `json:"skip_diarization,omitempty"`
+	SkipPunctuation      bool                        `json:"skip_punctuation,omitempty"`
+	RemoveDisfluencies   bool                        `json:"remove_disfluencies,omitempty"`
+	FilterProfanity      bool                        `json:"filter_profanity,omitempty"`
+	SpeakerChannelsCount int                         `json:"selenaninphe@gmail.com,omitempty"`
+	Metadata             string                      `json:"metadata,omitempty"`
+	CallbackURL          string                      `json:"callback_url,omitempty"`
+	CustomVocabularies   []JobOptionCustomVocabulary `json:"custom_vocabularies"`
 }
 
 // SubmitURL starts an asynchronous job to transcribe speech-to-text for a media file.
