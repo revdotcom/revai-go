@@ -62,16 +62,18 @@ func (c *Conn) Close() error {
 // DialStreamParams specifies the parameters to the
 // StreamService.Dial method.
 type DialStreamParams struct {
-	ContentType     string
-	Metadata        string
-	FilterProfanity bool
+	ContentType        string
+	Metadata           string
+	FilterProfanity    bool
+	RemoveDisfluencies string
 }
 
 type dialStreamParams struct {
-	ContentType     string `url:"content_type"`
-	Metadata        string `url:"metadata,omitempty"`
-	FilterProfanity bool   `url:"filter_profanity"`
-	AccessToken     string `url:"access_token"`
+	ContentType        string `url:"content_type"`
+	Metadata           string `url:"metadata,omitempty"`
+	RemoveDisfluencies string `url:"remove_disfluencies,omitempty"`
+	FilterProfanity    bool   `url:"filter_profanity"`
+	AccessToken        string `url:"access_token"`
 }
 
 // Dial dials a WebSocket request to the Rev.ai Streaming api.
@@ -86,8 +88,6 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 	if err != nil {
 		return nil, fmt.Errorf("failed creating url %w", err)
 	}
-
-	fmt.Println(u.String())
 
 	websocketConn, _, err := dialer.DialContext(ctx, u.String(), nil)
 	if err != nil {
@@ -120,10 +120,11 @@ func (s *StreamService) streamURL(params *DialStreamParams) (*url.URL, error) {
 	rel := &url.URL{Scheme: "wss", Path: "/speechtotext/v1/stream", Host: s.client.BaseURL.Host}
 
 	p := &dialStreamParams{
-		AccessToken:     s.client.APIKey,
-		ContentType:     params.ContentType,
-		Metadata:        params.Metadata,
-		FilterProfanity: params.FilterProfanity,
+		AccessToken:        s.client.APIKey,
+		ContentType:        params.ContentType,
+		Metadata:           params.Metadata,
+		FilterProfanity:    params.FilterProfanity,
+		RemoveDisfluencies: params.RemoveDisfluencies,
 	}
 
 	v, err := query.Values(p)
