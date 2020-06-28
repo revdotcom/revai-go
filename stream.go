@@ -66,6 +66,7 @@ type DialStreamParams struct {
 	Metadata           string
 	FilterProfanity    bool
 	RemoveDisfluencies string
+	CustomVocabularyID bool `url:"custom_vocabulary_id"`
 }
 
 type dialStreamParams struct {
@@ -73,6 +74,7 @@ type dialStreamParams struct {
 	Metadata           string `url:"metadata,omitempty"`
 	RemoveDisfluencies string `url:"remove_disfluencies,omitempty"`
 	FilterProfanity    bool   `url:"filter_profanity"`
+	CustomVocabularyID bool   `url:"custom_vocabulary_id"`
 	AccessToken        string `url:"access_token"`
 }
 
@@ -125,6 +127,7 @@ func (s *StreamService) streamURL(params *DialStreamParams) (*url.URL, error) {
 		Metadata:           params.Metadata,
 		FilterProfanity:    params.FilterProfanity,
 		RemoveDisfluencies: params.RemoveDisfluencies,
+		CustomVocabularyID: params.CustomVocabularyID,
 	}
 
 	v, err := query.Values(p)
