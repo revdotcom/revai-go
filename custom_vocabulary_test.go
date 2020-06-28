@@ -31,7 +31,7 @@ func TestCustomVocabularyService_Create(t *testing.T) {
 
 func TestCustomVocabularyService_Get(t *testing.T) {
 	params := &GetCustomVocabularyParams{
-		ID: testVocabID,
+		ID: testVocab.ID,
 	}
 
 	ctx := context.Background()
@@ -57,4 +57,20 @@ func TestCustomVocabularyService_List(t *testing.T) {
 	}
 
 	assert.Greater(t, len(vocabularies), 0, "vocabularies should not be nil")
+}
+
+func TestCustomVocabularyService_Delete(t *testing.T) {
+	deletableVocab := makeTestVocab()
+
+	params := &DeleteCustomVocabularyParams{
+		ID: deletableVocab.ID,
+	}
+
+	ctx := context.Background()
+
+	err := testClient.CustomVocabulary.Delete(ctx, params)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 }

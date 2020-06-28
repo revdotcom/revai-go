@@ -99,3 +99,26 @@ func (s *CustomVocabularyService) List(ctx context.Context, params *ListCustomVo
 
 	return vocabularies, nil
 }
+
+// DeleteCustomVocabularyParams specifies the parameters to the
+// CustomVocabularyService.Delete method.
+type DeleteCustomVocabularyParams struct {
+	ID string
+}
+
+// Delete deletes the custom vocabulary.
+// https://www.rev.ai/docs/streaming#operation/DeleteCustomVocabulary
+func (s *CustomVocabularyService) Delete(ctx context.Context, params *DeleteCustomVocabularyParams) error {
+	urlPath := "/speechtotext/v1/vocabularies/" + params.ID
+
+	req, err := s.client.newRequest(http.MethodDelete, urlPath, nil)
+	if err != nil {
+		return fmt.Errorf("failed creating request %w", err)
+	}
+
+	if err := s.client.doJSON(ctx, req, nil); err != nil {
+		return err
+	}
+
+	return nil
+}
