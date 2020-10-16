@@ -31,8 +31,10 @@ Below are a few simple examples:
 ```go
 // default client
 c := revai.NewClient("API-KEY")
+```
 
-// new client with options
+### New Client With Options
+```go
 httpClient := &http.Client{
     Timeout: 30 * time.Second,
 }
