@@ -38,7 +38,7 @@ type Client struct {
 
 	APIKey string
 
-	common service 
+	common service
 
 	// Services used for talking to different parts of the Rev.ai API.
 	Job              *JobService

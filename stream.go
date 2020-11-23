@@ -52,6 +52,11 @@ func (c *Conn) Write(r io.Reader) error {
 	return nil
 }
 
+// Send EOS to let Rev know we are done. see https://www.rev.ai/docs/streaming#section/Client-to-Rev.ai-Input/Sending-Audio-to-Rev.ai
+func (c *Conn) WriteDone() error {
+	return c.conn.WriteMessage(websocket.TextMessage, []byte("EOS"))
+}
+
 // Close closes the message chan and the websocket connection
 func (c *Conn) Close() error {
 	close(c.Msg)
