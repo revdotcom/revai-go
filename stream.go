@@ -87,6 +87,7 @@ type StreamMessage struct {
 // web socket connection
 type Conn struct {
 	Msg chan StreamMessage
+	Err chan error
 
 	conn *websocket.Conn
 }
@@ -161,6 +162,7 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 	conn := &Conn{
 		conn: websocketConn,
 		Msg:  make(chan StreamMessage),
+		Err:  make(chan error),
 	}
 
 	go func() {
@@ -170,10 +172,11 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 			if err := conn.conn.ReadJSON(&msg); err != nil {
 				if e, ok := err.(*websocket.CloseError); ok {
 					isRevError, revError := IsRevError(e.Code)
-
+					conn.Err <- revError
 				}
 
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					// perhaps an error should be sent on Err here too
 					return
 				}
 				continue
