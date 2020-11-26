@@ -34,7 +34,7 @@ var shouldErrorRetry = map[int]bool{
 }
 
 // Whether or not connection should be retried
-var shouldErrorRetry = map[int]bool{
+var errorMsgs = map[int]string{
 	CloseUnauthorized:        "Unauthorized. The provided access token is invalid.",
 	CloseBadRequest:          "Bad request. The connection’s content-type is invalid, metadata contains too many characters or the custom vocabulary does not exist with that id.",
 	CloseInsufficientCredits: "Insufficient credits. The client does not have enough credits to continue the streaming session.",
@@ -44,7 +44,7 @@ var shouldErrorRetry = map[int]bool{
 }
 
 // A close message from rev see https://www.rev.ai/docs/streaming#section/Error-Codes
-type StreamingError struct {
+type RevError struct {
 	// Error code
 	Code int
 
@@ -55,8 +55,19 @@ type StreamingError struct {
 	ShouldRetry bool
 }
 
-func (e *StreamingError) Error() string {
+func (e RevError) Error() string {
 	return fmt.Sprintf("Streaming error: %s", e.Text)
+}
+
+// Check if the code is a Rev error if so return it.
+func IsRevError(code int) (bool, error) {
+	errorString, exists := errorMsgs[code]
+	if exists {
+		shouldRetry := shouldErrorRetry[code]
+		return true, RevError{code, errorString, shouldRetry}
+	} else {
+		return false, nil
+	}
 }
 
 // StreamService provides access to the stream related functions
@@ -157,6 +168,11 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 		for {
 			var msg StreamMessage
 			if err := conn.conn.ReadJSON(&msg); err != nil {
+				if e, ok := err.(*websocket.CloseError); ok {
+					isRevError, revError := IsRevError(e.Code)
+
+				}
+
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 					return
 				}
