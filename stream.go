@@ -13,6 +13,36 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Error codes
+const (
+	CloseUnauthorized        = 4001
+	CloseBadRequest          = 4002
+	CloseInsufficientCredits = 4003
+	CloseServerShuttingDown  = 4010
+	CloseNoInstanceAvailable = 4013
+	CloseTooManyRequests     = 4029
+)
+
+// Whether or not connection should be retried
+var shouldErrorRetry = map[int]bool{
+	CloseUnauthorized:        false,
+	CloseBadRequest:          false,
+	CloseInsufficientCredits: false,
+	CloseServerShuttingDown:  true,
+	CloseNoInstanceAvailable: true,
+	CloseTooManyRequests:     false,
+}
+
+// Whether or not connection should be retried
+var shouldErrorRetry = map[int]bool{
+	CloseUnauthorized:        "Unauthorized. The provided access token is invalid.",
+	CloseBadRequest:          "Bad request. The connection’s content-type is invalid, metadata contains too many characters or the custom vocabulary does not exist with that id.",
+	CloseInsufficientCredits: "Insufficient credits. The client does not have enough credits to continue the streaming session.",
+	CloseServerShuttingDown:  "Server shutting down. The connection was terminated due to the server shutting down.",
+	CloseNoInstanceAvailable: "No instance available. No available streaming instances were found. User should attempt to retry the connection later.",
+	CloseTooManyRequests:     "Too many requests. The number of concurrent connections exceeded the limit. Contact customer support to increase it.",
+}
+
 // StreamService provides access to the stream related functions
 // in the Rev.ai API.
 type StreamService service
@@ -32,6 +62,16 @@ type Conn struct {
 	Msg chan StreamMessage
 
 	conn *websocket.Conn
+}
+
+// A close message from rev see https://www.rev.ai/docs/streaming#section/Error-Codes
+type StreamingError struct {
+	Code int
+
+	Text string
+
+	// Whether or not the connection should be retried
+	ShouldRetry bool
 }
 
 // Write sends a message to the websocket connection
