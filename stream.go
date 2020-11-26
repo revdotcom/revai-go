@@ -43,6 +43,22 @@ var shouldErrorRetry = map[int]bool{
 	CloseTooManyRequests:     "Too many requests. The number of concurrent connections exceeded the limit. Contact customer support to increase it.",
 }
 
+// A close message from rev see https://www.rev.ai/docs/streaming#section/Error-Codes
+type StreamingError struct {
+	// Error code
+	Code int
+
+	// The error string
+	Text string
+
+	// Whether or not the connection should be retried
+	ShouldRetry bool
+}
+
+func (e *StreamingError) Error() string {
+	return fmt.Sprintf("Streaming error: %s", e.Text)
+}
+
 // StreamService provides access to the stream related functions
 // in the Rev.ai API.
 type StreamService service
@@ -62,16 +78,6 @@ type Conn struct {
 	Msg chan StreamMessage
 
 	conn *websocket.Conn
-}
-
-// A close message from rev see https://www.rev.ai/docs/streaming#section/Error-Codes
-type StreamingError struct {
-	Code int
-
-	Text string
-
-	// Whether or not the connection should be retried
-	ShouldRetry bool
 }
 
 // Write sends a message to the websocket connection
