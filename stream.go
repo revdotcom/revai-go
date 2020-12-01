@@ -124,12 +124,12 @@ func (c *Conn) Write(r io.Reader) error {
 }
 
 // Recv get messages back from rev
-func (c *Conn) Recv() (StreamMessage, error) {
+func (c *Conn) Recv() (*StreamMessage, error) {
 	select {
 	case err := <-c.err:
 		return nil, err
 	case msg := <-c.msg:
-		return msg, nil
+		return &msg, nil
 	}
 }
 
