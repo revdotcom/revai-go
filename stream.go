@@ -100,9 +100,8 @@ type StreamMessage struct {
 // It has certain helper methods to easily parse and communicate to the
 // web socket connection
 type Conn struct {
-	Msg chan StreamMessage
-	Err chan error
-
+	msg  chan StreamMessage
+	err  chan error
 	conn *websocket.Conn
 }
 
@@ -124,6 +123,16 @@ func (c *Conn) Write(r io.Reader) error {
 	return nil
 }
 
+// Recv get messages back from rev
+func (c *Conn) Recv() (StreamMessage, error) {
+	select {
+	case err := <-c.err:
+		return nil, err
+	case msg := <-c.msg:
+		return msg, nil
+	}
+}
+
 // Send EOS to let Rev know we are done. see https://www.rev.ai/docs/streaming#section/Client-to-Rev.ai-Input/Sending-Audio-to-Rev.ai
 func (c *Conn) WriteDone() error {
 	return c.conn.WriteMessage(websocket.TextMessage, []byte("EOS"))
@@ -131,7 +140,7 @@ func (c *Conn) WriteDone() error {
 
 // Close closes the message chan and the websocket connection
 func (c *Conn) Close() error {
-	close(c.Msg)
+	close(c.msg)
 
 	return c.conn.Close()
 }
@@ -175,8 +184,8 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 
 	conn := &Conn{
 		conn: websocketConn,
-		Msg:  make(chan StreamMessage),
-		Err:  make(chan error),
+		msg:  make(chan StreamMessage),
+		err:  make(chan error),
 	}
 
 	go func() {
@@ -185,17 +194,20 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 			var msg StreamMessage
 			if err := conn.conn.ReadJSON(&msg); err != nil {
 				if e, ok := err.(*websocket.CloseError); ok {
-					isRevError, revError := IsRevError(e.Code)
-					conn.Err <- revError
+					if isRevError, revError := IsRevError(e.Code); isRevError {
+						conn.err <- revError
+						return
+					}
 				}
 
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 					// perhaps an error should be sent on Err here too
+					conn.err <- err
 					return
 				}
 				continue
 			}
-			conn.Msg <- msg
+			conn.msg <- msg
 		}
 	}()
 
