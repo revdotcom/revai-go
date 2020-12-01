@@ -137,7 +137,13 @@ func (c *Conn) Recv() (*StreamMessage, error) {
 	case err := <-c.err:
 		return nil, err
 	case msg := <-c.msg:
-		// TODO: check if c.state == StateDone, if so return io.EOF
+		if msg.Type == "final" {
+			c.stateLock.Lock()
+			if c.state == StateDone {
+				return nil, io.EOF
+			}
+			c.stateLock.Unlock()
+		}
 		return &msg, nil
 	}
 }
