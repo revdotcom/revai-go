@@ -15,32 +15,32 @@ import (
 
 // Error codes
 const (
-	CloseUnauthorized        = 4001
-	CloseBadRequest          = 4002
-	CloseInsufficientCredits = 4003
-	CloseServerShuttingDown  = 4010
-	CloseNoInstanceAvailable = 4013
-	CloseTooManyRequests     = 4029
+	ErrCloseUnauthorized        = 4001
+	ErrCloseBadRequest          = 4002
+	ErrCloseInsufficientCredits = 4003
+	ErrCloseServerShuttingDown  = 4010
+	ErrCloseNoInstanceAvailable = 4013
+	ErrCloseTooManyRequests     = 4029
 )
 
 // Whether or not connection should be retried
 var shouldErrorRetry = map[int]bool{
-	CloseUnauthorized:        false,
-	CloseBadRequest:          false,
-	CloseInsufficientCredits: false,
-	CloseServerShuttingDown:  true,
-	CloseNoInstanceAvailable: true,
-	CloseTooManyRequests:     false,
+	ErrCloseUnauthorized:        false,
+	ErrCloseBadRequest:          false,
+	ErrCloseInsufficientCredits: false,
+	ErrCloseServerShuttingDown:  true,
+	ErrCloseNoInstanceAvailable: true,
+	ErrCloseTooManyRequests:     false,
 }
 
 // Whether or not connection should be retried
 var errorMsgs = map[int]string{
-	CloseUnauthorized:        "Unauthorized. The provided access token is invalid.",
-	CloseBadRequest:          "Bad request. The connection’s content-type is invalid, metadata contains too many characters or the custom vocabulary does not exist with that id.",
-	CloseInsufficientCredits: "Insufficient credits. The client does not have enough credits to continue the streaming session.",
-	CloseServerShuttingDown:  "Server shutting down. The connection was terminated due to the server shutting down.",
-	CloseNoInstanceAvailable: "No instance available. No available streaming instances were found. User should attempt to retry the connection later.",
-	CloseTooManyRequests:     "Too many requests. The number of concurrent connections exceeded the limit. Contact customer support to increase it.",
+	ErrCloseUnauthorized:        "Unauthorized. The provided access token is invalid.",
+	ErrCloseBadRequest:          "Bad request. The connection’s content-type is invalid, metadata contains too many characters or the custom vocabulary does not exist with that id.",
+	ErrCloseInsufficientCredits: "Insufficient credits. The client does not have enough credits to continue the streaming session.",
+	ErrCloseServerShuttingDown:  "Server shutting down. The connection was terminated due to the server shutting down.",
+	ErrCloseNoInstanceAvailable: "No instance available. No available streaming instances were found. User should attempt to retry the connection later.",
+	ErrCloseTooManyRequests:     "Too many requests. The number of concurrent connections exceeded the limit. Contact customer support to increase it.",
 }
 
 // A close message from rev see https://www.rev.ai/docs/streaming#section/Error-Codes
@@ -50,13 +50,23 @@ type RevError struct {
 
 	// The error string
 	Text string
+}
 
-	// Whether or not the connection should be retried
-	ShouldRetry bool
+// A retriable eror
+type RetriableError struct {
+	// Error code
+	Code int
+
+	// The error string
+	Text string
 }
 
 func (e RevError) Error() string {
 	return fmt.Sprintf("Streaming error: %s", e.Text)
+}
+
+func (e RetriableError) Error() string {
+	return fmt.Sprintf("Retriable streaming error: %s", e.Text)
 }
 
 // Check if the code is a Rev error if so return it.
@@ -64,7 +74,11 @@ func IsRevError(code int) (bool, error) {
 	errorString, exists := errorMsgs[code]
 	if exists {
 		shouldRetry := shouldErrorRetry[code]
-		return true, RevError{code, errorString, shouldRetry}
+		if shouldRetry {
+			return true, RetriableError{code, errorString}
+		} else {
+			return true, RevError{code, errorString}
+		}
 	} else {
 		return false, nil
 	}
