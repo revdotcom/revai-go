@@ -33,7 +33,15 @@ func main() {
 	}
 
 	go func() {
-		for msg := range conn.Msg {
+		for {
+			msg, err := conn.Recv()
+			if err != nil {
+				if err == io.EOF {
+					break
+				} else {
+					panic(err)
+				}
+			}
 			res, err := json.Marshal(msg)
 			if err != nil {
 				panic(err)

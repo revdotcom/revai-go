@@ -6,11 +6,17 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/google/go-querystring/query"
 
 	"github.com/gorilla/websocket"
+)
+
+const (
+	StateConnected = iota
+	StateDone
 )
 
 // Error codes
@@ -100,9 +106,11 @@ type StreamMessage struct {
 // It has certain helper methods to easily parse and communicate to the
 // web socket connection
 type Conn struct {
-	msg  chan StreamMessage
-	err  chan error
-	conn *websocket.Conn
+	msg       chan StreamMessage
+	err       chan error
+	conn      *websocket.Conn
+	state     int
+	stateLock *sync.Mutex
 }
 
 // Write sends a message to the websocket connection
@@ -129,12 +137,16 @@ func (c *Conn) Recv() (*StreamMessage, error) {
 	case err := <-c.err:
 		return nil, err
 	case msg := <-c.msg:
+		// TODO: check if c.state == StateDone, if so return io.EOF
 		return &msg, nil
 	}
 }
 
 // Send EOS to let Rev know we are done. see https://www.rev.ai/docs/streaming#section/Client-to-Rev.ai-Input/Sending-Audio-to-Rev.ai
 func (c *Conn) WriteDone() error {
+	c.stateLock.Lock()
+	c.state = StateDone
+	c.stateLock.Unlock()
 	return c.conn.WriteMessage(websocket.TextMessage, []byte("EOS"))
 }
 
@@ -183,9 +195,11 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 	}
 
 	conn := &Conn{
-		conn: websocketConn,
-		msg:  make(chan StreamMessage),
-		err:  make(chan error),
+		conn:      websocketConn,
+		msg:       make(chan StreamMessage),
+		err:       make(chan error),
+		state:     StateConnected,
+		stateLock: &sync.Mutex{},
 	}
 
 	go func() {
