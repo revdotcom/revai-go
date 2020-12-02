@@ -37,6 +37,7 @@ func main() {
 			msg, err := conn.Recv()
 			if err != nil {
 				if err == io.EOF {
+					fmt.Println("Reader got EOF")
 					break
 				} else {
 					panic(err)

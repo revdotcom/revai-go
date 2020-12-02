@@ -16,6 +16,7 @@ import (
 
 const (
 	StateConnected = iota
+	StateDoneSent
 	StateDone
 )
 
@@ -133,14 +134,18 @@ func (c *Conn) Write(r io.Reader) error {
 
 // Recv get messages back from rev
 func (c *Conn) Recv() (*StreamMessage, error) {
+	// we are setting the state to done in a previous call to this function so it is thread safe without the lock.
+	if c.state == StateDone {
+		return nil, io.EOF
+	}
 	select {
 	case err := <-c.err:
 		return nil, err
 	case msg := <-c.msg:
 		if msg.Type == "final" {
 			c.stateLock.Lock()
-			if c.state == StateDone {
-				return nil, io.EOF
+			if c.state == StateDoneSent {
+				c.state = StateDone
 			}
 			c.stateLock.Unlock()
 		}
@@ -151,7 +156,9 @@ func (c *Conn) Recv() (*StreamMessage, error) {
 // Send EOS to let Rev know we are done. see https://www.rev.ai/docs/streaming#section/Client-to-Rev.ai-Input/Sending-Audio-to-Rev.ai
 func (c *Conn) WriteDone() error {
 	c.stateLock.Lock()
-	c.state = StateDone
+	if c.state != StateDone {
+		c.state = StateDoneSent
+	}
 	c.stateLock.Unlock()
 	return c.conn.WriteMessage(websocket.TextMessage, []byte("EOS"))
 }
