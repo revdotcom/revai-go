@@ -50,7 +50,7 @@ var errorMsgs = map[int]string{
 	ErrCloseTooManyRequests:     "Too many requests. The number of concurrent connections exceeded the limit. Contact customer support to increase it.",
 }
 
-// A close message from rev see https://www.rev.ai/docs/streaming#section/Error-Codes
+// RevError represents a close message from rev see https://www.rev.ai/docs/streaming#section/Error-Codes
 type RevError struct {
 	// Error code
 	Code int
@@ -59,7 +59,7 @@ type RevError struct {
 	Text string
 }
 
-// A retriable eror
+// RetriableError represnts retriable stream error
 type RetriableError struct {
 	// Error code
 	Code int
@@ -153,7 +153,7 @@ func (c *Conn) Recv() (*StreamMessage, error) {
 	}
 }
 
-// Send EOS to let Rev know we are done. see https://www.rev.ai/docs/streaming#section/Client-to-Rev.ai-Input/Sending-Audio-to-Rev.ai
+// WriteDone sends EOS to let Rev know we are done. see https://www.rev.ai/docs/streaming#section/Client-to-Rev.ai-Input/Sending-Audio-to-Rev.ai
 func (c *Conn) WriteDone() error {
 	c.stateLock.Lock()
 	if c.state != StateDone {
