@@ -76,19 +76,19 @@ func (e RetriableError) Error() string {
 	return fmt.Sprintf("Retriable streaming error: %s", e.Text)
 }
 
-// Check if the code is a Rev error if so return it.
+// IsRevError Check if the code is a Rev error if so return it.
 func IsRevError(code int) (bool, error) {
 	errorString, exists := errorMsgs[code]
 	if exists {
 		shouldRetry := shouldErrorRetry[code]
 		if shouldRetry {
 			return true, RetriableError{code, errorString}
-		} else {
-			return true, RevError{code, errorString}
 		}
-	} else {
-		return false, nil
+
+		return true, RevError{code, errorString}
 	}
+
+	return false, nil
 }
 
 // StreamService provides access to the stream related functions
