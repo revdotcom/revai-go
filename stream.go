@@ -6,12 +6,90 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/google/go-querystring/query"
 
 	"github.com/gorilla/websocket"
 )
+
+const (
+	StateConnected = iota
+	StateDoneSent
+	StateDone
+)
+
+// Error codes
+const (
+	ErrCloseUnauthorized        = 4001
+	ErrCloseBadRequest          = 4002
+	ErrCloseInsufficientCredits = 4003
+	ErrCloseServerShuttingDown  = 4010
+	ErrCloseNoInstanceAvailable = 4013
+	ErrCloseTooManyRequests     = 4029
+)
+
+// Whether or not connection should be retried
+var shouldErrorRetry = map[int]bool{
+	ErrCloseUnauthorized:        false,
+	ErrCloseBadRequest:          false,
+	ErrCloseInsufficientCredits: false,
+	ErrCloseServerShuttingDown:  true,
+	ErrCloseNoInstanceAvailable: true,
+	ErrCloseTooManyRequests:     false,
+}
+
+// Whether or not connection should be retried
+var errorMsgs = map[int]string{
+	ErrCloseUnauthorized:        "Unauthorized. The provided access token is invalid.",
+	ErrCloseBadRequest:          "Bad request. The connection’s content-type is invalid, metadata contains too many characters or the custom vocabulary does not exist with that id.",
+	ErrCloseInsufficientCredits: "Insufficient credits. The client does not have enough credits to continue the streaming session.",
+	ErrCloseServerShuttingDown:  "Server shutting down. The connection was terminated due to the server shutting down.",
+	ErrCloseNoInstanceAvailable: "No instance available. No available streaming instances were found. User should attempt to retry the connection later.",
+	ErrCloseTooManyRequests:     "Too many requests. The number of concurrent connections exceeded the limit. Contact customer support to increase it.",
+}
+
+// RevError represents a close message from rev see https://www.rev.ai/docs/streaming#section/Error-Codes
+type RevError struct {
+	// Error code
+	Code int
+
+	// The error string
+	Text string
+}
+
+// RetriableError represnts retriable stream error
+type RetriableError struct {
+	// Error code
+	Code int
+
+	// The error string
+	Text string
+}
+
+func (e RevError) Error() string {
+	return fmt.Sprintf("Streaming error: %s", e.Text)
+}
+
+func (e RetriableError) Error() string {
+	return fmt.Sprintf("Retriable streaming error: %s", e.Text)
+}
+
+// IsRevError Check if the code is a Rev error if so return it.
+func IsRevError(code int) (bool, error) {
+	errorString, exists := errorMsgs[code]
+	if exists {
+		shouldRetry := shouldErrorRetry[code]
+		if shouldRetry {
+			return true, RetriableError{code, errorString}
+		}
+
+		return true, RevError{code, errorString}
+	}
+
+	return false, nil
+}
 
 // StreamService provides access to the stream related functions
 // in the Rev.ai API.
@@ -29,9 +107,11 @@ type StreamMessage struct {
 // It has certain helper methods to easily parse and communicate to the
 // web socket connection
 type Conn struct {
-	Msg chan StreamMessage
-
-	conn *websocket.Conn
+	msg       chan StreamMessage
+	err       chan error
+	conn      *websocket.Conn
+	state     int
+	stateLock *sync.Mutex
 }
 
 // Write sends a message to the websocket connection
@@ -52,14 +132,40 @@ func (c *Conn) Write(r io.Reader) error {
 	return nil
 }
 
-// Send EOS to let Rev know we are done. see https://www.rev.ai/docs/streaming#section/Client-to-Rev.ai-Input/Sending-Audio-to-Rev.ai
+// Recv get messages back from rev
+func (c *Conn) Recv() (*StreamMessage, error) {
+	// we are setting the state to done in a previous call to this function so it is thread safe without the lock.
+	if c.state == StateDone {
+		return nil, io.EOF
+	}
+	select {
+	case err := <-c.err:
+		return nil, err
+	case msg := <-c.msg:
+		if msg.Type == "final" {
+			c.stateLock.Lock()
+			if c.state == StateDoneSent {
+				c.state = StateDone
+			}
+			c.stateLock.Unlock()
+		}
+		return &msg, nil
+	}
+}
+
+// WriteDone sends EOS to let Rev know we are done. see https://www.rev.ai/docs/streaming#section/Client-to-Rev.ai-Input/Sending-Audio-to-Rev.ai
 func (c *Conn) WriteDone() error {
+	c.stateLock.Lock()
+	if c.state != StateDone {
+		c.state = StateDoneSent
+	}
+	c.stateLock.Unlock()
 	return c.conn.WriteMessage(websocket.TextMessage, []byte("EOS"))
 }
 
 // Close closes the message chan and the websocket connection
 func (c *Conn) Close() error {
-	close(c.Msg)
+	close(c.msg)
 
 	return c.conn.Close()
 }
@@ -102,8 +208,11 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 	}
 
 	conn := &Conn{
-		conn: websocketConn,
-		Msg:  make(chan StreamMessage),
+		conn:      websocketConn,
+		msg:       make(chan StreamMessage),
+		err:       make(chan error),
+		state:     StateConnected,
+		stateLock: &sync.Mutex{},
 	}
 
 	go func() {
@@ -111,12 +220,21 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 		for {
 			var msg StreamMessage
 			if err := conn.conn.ReadJSON(&msg); err != nil {
+				if e, ok := err.(*websocket.CloseError); ok {
+					if isRevError, revError := IsRevError(e.Code); isRevError {
+						conn.err <- revError
+						return
+					}
+				}
+
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					// perhaps an error should be sent on Err here too
+					conn.err <- err
 					return
 				}
 				continue
 			}
-			conn.Msg <- msg
+			conn.msg <- msg
 		}
 	}()
 

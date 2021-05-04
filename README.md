@@ -106,25 +106,4 @@ fmt.Println("balance", account.BalanceSeconds)
 ```
 
 ### Stream
-```go
-params := &revai.DialStreamParams{
-	ContentType: "audio/x-wav",
-}
-
-conn, err := c.Stream.Dial(context.Background(), params)
-// error check
-defer conn.Close()
-
-go func() {
-	for msg := range conn.Msg {
-		fmt.Println(msg.Type)
-	}
-}()
-
-f, err := os.Open("./path/to/file")
-// error check
-
-if err := conn.Write(f); err != nil {
-	// handle error
-}
-```
+[streaming example](examples/streaming/stream.go)
