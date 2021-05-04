@@ -217,6 +217,7 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 
 	go func() {
 		defer conn.Close()
+		var prevErr error = nil
 		for {
 			var msg StreamMessage
 			if err := conn.conn.ReadJSON(&msg); err != nil {
@@ -228,10 +229,17 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 				}
 
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					// perhaps an error should be sent on Err here too
 					conn.err <- err
 					return
 				}
+
+				// ReadJson either returns a json decode error of will return the error again and again
+				// eventually leading to a panic. if we get the same error repeatedly report and finish.
+				if err == prevErr {
+					conn.err <- err
+					return
+				}
+
 				continue
 			}
 			conn.msg <- msg
