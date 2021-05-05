@@ -224,12 +224,10 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 				if e, ok := err.(*websocket.CloseError); ok {
 					if isRevError, revError := IsRevError(e.Code); isRevError {
 						conn.err <- revError
-						return
+					} else {
+						conn.err <- e
 					}
-				}
-
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					conn.err <- err
+					// if we recieve any CloseError the connection is closed and needs to be reestablished before reading can continue
 					return
 				}
 
@@ -240,6 +238,7 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 					return
 				}
 
+				// silently drop read error.
 				continue
 			}
 			conn.msg <- msg
