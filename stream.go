@@ -2,6 +2,7 @@ package revai
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -217,6 +218,18 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 
 	go func() {
 		defer conn.Close()
+		defer func() {
+			if r := recover(); r != nil {
+				switch x := r.(type) {
+				case error:
+					conn.err <- x
+				case string:
+					conn.err <- errors.New(x)
+				default:
+					conn.err <- errors.New("unknown panic")
+				}
+			}
+		}()
 		previousErrorString := ""
 		previousErrorMatchCount := 0
 
