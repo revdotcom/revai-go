@@ -217,7 +217,9 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 
 	go func() {
 		defer conn.Close()
-		var prevErr error = nil
+		previousErrorString := ""
+		previousErrorMatchCount := 0
+
 		for {
 			var msg StreamMessage
 			if err := conn.conn.ReadJSON(&msg); err != nil {
@@ -231,12 +233,18 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 					return
 				}
 
-				// ReadJson either returns a json decode error of will return the error again and again
+				// ReadJson either returns either a json decode error or it will return the error again and again
 				// eventually leading to a panic. if we get the same error repeatedly report and finish.
-				if err == prevErr {
+				if err.Error() == previousErrorString {
+					previousErrorMatchCount += 1
+				} else {
+					previousErrorMatchCount = 0
+				}
+				if previousErrorMatchCount > 5 {
 					conn.err <- err
 					return
 				}
+				previousErrorString = err.Error()
 
 				// silently drop read error.
 				continue
