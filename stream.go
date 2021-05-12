@@ -163,9 +163,8 @@ func (c *Conn) WriteDone() error {
 	return c.conn.WriteMessage(websocket.TextMessage, []byte("EOS"))
 }
 
-// Close closes the message chan and the websocket connection
+// Close closes the websocket connection
 func (c *Conn) Close() error {
-	close(c.msg)
 
 	return c.conn.Close()
 }
@@ -217,6 +216,8 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 
 	go func() {
 		defer conn.Close()
+		// close msg channel as we wont be writing any more
+		defer close(conn.msg)
 		for {
 			var msg StreamMessage
 			if err := conn.conn.ReadJSON(&msg); err != nil {
