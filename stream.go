@@ -2,6 +2,7 @@ package revai
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -217,21 +218,48 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 
 	go func() {
 		defer conn.Close()
+		defer func() {
+			if r := recover(); r != nil {
+				switch x := r.(type) {
+				case error:
+					conn.err <- x
+				case string:
+					conn.err <- errors.New(x)
+				default:
+					conn.err <- errors.New("unknown panic")
+				}
+			}
+		}()
+		previousErrorString := ""
+		previousErrorMatchCount := 0
+
 		for {
 			var msg StreamMessage
 			if err := conn.conn.ReadJSON(&msg); err != nil {
 				if e, ok := err.(*websocket.CloseError); ok {
 					if isRevError, revError := IsRevError(e.Code); isRevError {
 						conn.err <- revError
-						return
+					} else {
+						conn.err <- e
 					}
+					// if we recieve any CloseError the connection is closed and needs to be reestablished before reading can continue
+					return
 				}
 
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					// perhaps an error should be sent on Err here too
+				// ReadJson either returns either a json decode error or it will return the error again and again
+				// eventually leading to a panic. if we get the same error repeatedly report and finish.
+				if err.Error() == previousErrorString {
+					previousErrorMatchCount += 1
+				} else {
+					previousErrorMatchCount = 0
+				}
+				if previousErrorMatchCount > 5 {
 					conn.err <- err
 					return
 				}
+				previousErrorString = err.Error()
+
+				// silently drop read error.
 				continue
 			}
 			conn.msg <- msg
