@@ -135,21 +135,16 @@ func (c *Conn) Write(r io.Reader) error {
 
 // Recv get messages back from rev
 func (c *Conn) Recv() (*StreamMessage, error) {
-	// we are setting the state to done in a previous call to this function so it is thread safe without the lock.
-	if c.state == StateDone {
-		return nil, io.EOF
-	}
 	select {
 	case err := <-c.err:
+		defer close(c.err)
+		if e, ok := err.(*websocket.CloseError); ok {
+			if e.Code == 1000 {
+				return nil, io.EOF
+			}
+		}
 		return nil, err
 	case msg := <-c.msg:
-		if msg.Type == "final" {
-			c.stateLock.Lock()
-			if c.state == StateDoneSent {
-				c.state = StateDone
-			}
-			c.stateLock.Unlock()
-		}
 		return &msg, nil
 	}
 }
@@ -166,7 +161,6 @@ func (c *Conn) WriteDone() error {
 
 // Close closes the websocket connection
 func (c *Conn) Close() error {
-
 	return c.conn.Close()
 }
 
