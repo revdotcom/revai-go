@@ -137,7 +137,6 @@ func (c *Conn) Write(r io.Reader) error {
 func (c *Conn) Recv() (*StreamMessage, error) {
 	select {
 	case err := <-c.err:
-		defer close(c.err)
 		if e, ok := err.(*websocket.CloseError); ok {
 			if e.Code == 1000 {
 				return nil, io.EOF
@@ -212,6 +211,7 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 	go func() {
 		defer conn.Close()
 		// close msg channel as we wont be writing any more
+		defer close(conn.err)
 		defer close(conn.msg)
 		defer func() {
 			if r := recover(); r != nil {
