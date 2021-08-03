@@ -135,21 +135,15 @@ func (c *Conn) Write(r io.Reader) error {
 
 // Recv get messages back from rev
 func (c *Conn) Recv() (*StreamMessage, error) {
-	// we are setting the state to done in a previous call to this function so it is thread safe without the lock.
-	if c.state == StateDone {
-		return nil, io.EOF
-	}
 	select {
 	case err := <-c.err:
+		if e, ok := err.(*websocket.CloseError); ok {
+			if e.Code == 1000 {
+				return nil, io.EOF
+			}
+		}
 		return nil, err
 	case msg := <-c.msg:
-		if msg.Type == "final" {
-			c.stateLock.Lock()
-			if c.state == StateDoneSent {
-				c.state = StateDone
-			}
-			c.stateLock.Unlock()
-		}
 		return &msg, nil
 	}
 }
@@ -164,10 +158,8 @@ func (c *Conn) WriteDone() error {
 	return c.conn.WriteMessage(websocket.TextMessage, []byte("EOS"))
 }
 
-// Close closes the message chan and the websocket connection
+// Close closes the websocket connection
 func (c *Conn) Close() error {
-	close(c.msg)
-
 	return c.conn.Close()
 }
 
@@ -218,6 +210,9 @@ func (s *StreamService) Dial(ctx context.Context, params *DialStreamParams) (*Co
 
 	go func() {
 		defer conn.Close()
+		// close msg channel as we wont be writing any more
+		defer close(conn.err)
+		defer close(conn.msg)
 		defer func() {
 			if r := recover(); r != nil {
 				switch x := r.(type) {
