@@ -75,4 +75,6 @@ func main() {
 
 	}
 
+	conn.Close()
+
 }
