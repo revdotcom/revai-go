@@ -1,6 +1,6 @@
 # Go Rev.ai 
-[![Go Report Card](https://goreportcard.com/badge/github.com/oriiolabs/revai-go)](https://goreportcard.com/report/github.com/oriiolabs/revai-go)
-[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/oriiolabs/revai-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/threeaccents/revai-go)](https://goreportcard.com/report/github.com/threeaccents/revai-go)
+[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/threeaccents/revai-go)
 
 A [Rev.ai](https://rev.ai) Go client library.
 
@@ -16,7 +16,7 @@ Then, import it using:
 
 ``` go
 import (
-    "github.com/oriiolabs/revai-go"
+    "github.com/threeaccents/revai-go"
 )
 ```
 
