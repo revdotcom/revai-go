@@ -47,7 +47,7 @@ type JobOptions struct {
 	SkipPunctuation      bool                        `json:"skip_punctuation,omitempty"`
 	RemoveDisfluencies   bool                        `json:"remove_disfluencies,omitempty"`
 	FilterProfanity      bool                        `json:"filter_profanity,omitempty"`
-	SpeakerChannelsCount int                         `json:"selenaninphe@gmail.com,omitempty"`
+	SpeakerChannelsCount int                         `json:"speaker_channels_count,omitempty"`
 	Metadata             string                      `json:"metadata,omitempty"`
 	CallbackURL          string                      `json:"callback_url,omitempty"`
 	CustomVocabularies   []JobOptionCustomVocabulary `json:"custom_vocabularies"`
@@ -119,7 +119,7 @@ type NewURLJobParams struct {
 	SkipPunctuation      bool                        `json:"skip_punctuation,omitempty"`
 	RemoveDisfluencies   bool                        `json:"remove_disfluencies,omitempty"`
 	FilterProfanity      bool                        `json:"filter_profanity,omitempty"`
-	SpeakerChannelsCount int                         `json:"selenaninphe@gmail.com,omitempty"`
+	SpeakerChannelsCount int                         `json:"speaker_channels_count,omitempty"`
 	Metadata             string                      `json:"metadata,omitempty"`
 	CallbackURL          string                      `json:"callback_url,omitempty"`
 	CustomVocabularies   []JobOptionCustomVocabulary `json:"custom_vocabularies"`
