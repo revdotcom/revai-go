@@ -1,4 +1,4 @@
-module github.com/oriiolabs/revai-go
+module github.com/threeaccents/revai-go
 
 go 1.14
 
