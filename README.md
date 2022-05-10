@@ -9,7 +9,7 @@ A [Rev.ai](https://rev.ai) Go client library.
 Install revai-go with:
 
 ```sh
-go get -u github.com/oriiolabs/revai-go
+go get -u github.com/threeaccents/revai-go
 ```
 
 Then, import it using:
@@ -22,7 +22,7 @@ import (
 
 ## Documentation
 
-For details on all the functionality in this library, see the [GoDoc](http://godoc.org/github.com/oriiolabs/revai-go)
+For details on all the functionality in this library, see the [GoDoc](http://godoc.org/github.com/threeaccents/revai-go)
 documentation.
 
 Below are a few simple examples:
