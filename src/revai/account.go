@@ -12,8 +12,13 @@ type AccountService service
 
 // Account is the developer's account information
 type Account struct {
-	Email          string `json:"email"`
-	BalanceSeconds int    `json:"balance_seconds"`
+	Email            string  `json:"email"`
+	FreeBalance      float64 `json:"free_balance"`
+	PurchasedBalance float64 `json:"purchased_balance"`
+	TotalBalance     float64 `json:"total_balance"`
+	InvoicedBalance  float64 `json:"invoiced_balance"`
+	BalanceSeconds   int     `json:"balance_seconds"`
+	HipaaEnabled     bool    `json:"hipaa_enabled"`
 }
 
 // Get the developer's account information

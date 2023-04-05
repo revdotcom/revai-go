@@ -80,7 +80,9 @@ func TestJobService_SubmitFileWithOption(t *testing.T) {
 
 func TestJobService_SubmitURL(t *testing.T) {
 	params := &NewURLJobParams{
-		MediaURL: testMediaURL,
+		SourceConfig: &UrlConfig{
+			Url: testMediaURL,
+		},
 	}
 
 	ctx := context.Background()
@@ -97,7 +99,9 @@ func TestJobService_SubmitURL(t *testing.T) {
 
 func TestJobService_SubmitWithOption(t *testing.T) {
 	params := &NewURLJobParams{
-		MediaURL: testMediaURL,
+		SourceConfig: &UrlConfig{
+			Url: testMediaURL,
+		},
 		Metadata: testMetadata,
 	}
 
@@ -133,20 +137,23 @@ func TestJobService_Get(t *testing.T) {
 func TestJobService_Delete(t *testing.T) {
 	deletableJob := makeTestJob()
 
-	params := &DeleteJobParams{
+	params := &DeleteParams{
 		ID: deletableJob.ID,
 	}
 
 	ctx := context.Background()
 
-	if err := testClient.Job.Delete(ctx, params); err != nil {
+	if job, err := testClient.Job.Delete(ctx, params); err != nil {
 		t.Error(err)
+		return
+	} else if job != nil {
+		t.Error("Bad Status " + job.Status)
 		return
 	}
 }
 
 func TestJobService_List(t *testing.T) {
-	params := &ListJobParams{}
+	params := &ListParams{}
 
 	ctx := context.Background()
 
@@ -160,7 +167,7 @@ func TestJobService_List(t *testing.T) {
 }
 
 func TestJobService_ListWithLimit(t *testing.T) {
-	params := &ListJobParams{
+	params := &ListParams{
 		Limit: 2,
 	}
 

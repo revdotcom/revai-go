@@ -68,7 +68,9 @@ fmt.Println("status", job.Status)
 const mediaURL = "https://support.rev.com/hc/en-us/article_attachments/200043975/FTC_Sample_1_-_Single.mp3"
 
 params := &revai.NewURLJobParams{
-    MediaURL: mediaURL, 
+    SourceConfig: &UrlConfig{
+        Url: mediaURL,
+    },
 }
 
 ctx := context.Background()
@@ -107,3 +109,39 @@ fmt.Println("balance", account.BalanceSeconds)
 
 ### Stream
 [streaming example](examples/streaming/stream.go)
+
+
+### Submit Local LanguageId Job
+
+```go
+params := &revai.LanguageIdParams{
+	Media:    f, // some io.Reader
+	Filename: f.Name(),
+}
+
+ctx := context.Background()
+
+job, err := c.Job.SubmitFile(ctx, params)
+// handle err
+
+fmt.Println("status", job.Status)
+```
+### Submit Url LanguageId Job
+
+```go
+const mediaURL = "https://support.rev.com/hc/en-us/article_attachments/200043975/FTC_Sample_1_-_Single.mp3"
+
+params := &revai.LanguageIdParams{
+    SourceConfig: &UrlConfig{
+        Url: mediaURL,
+    },
+    MetaData: "This is a test",
+}
+
+ctx := context.Background()
+
+job, err := c.LanguageId.SubmitURL(ctx, params)
+// handle err
+
+fmt.Println("status", job.Status)
+```
