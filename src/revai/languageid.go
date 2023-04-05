@@ -94,7 +94,7 @@ func (s *LanguageIdService) SubmitFile(ctx context.Context, params *LanguageIdFi
 
 // LanguageIdParams specifies the parameters to the
 // LanguageIdService.SubmitURL method.
-type LanguageIdParams struct {
+type LanguageIdUrlParams struct {
 	SourceConfig       *UrlConfig `json:"source_config,omitempty"`
 	NotificationConfig *UrlConfig `json:"notification_config,omitempty"`
 	Metadata           string     `json:"metadata,omitempty"`
@@ -103,7 +103,7 @@ type LanguageIdParams struct {
 
 // SubmitURL starts an asynchronous job to transcribe speech-to-text for a media file.
 // https://www.rev.ai/docs#operation/SubmitLanguageIdentificationJob
-func (s *LanguageIdService) SubmitURL(ctx context.Context, params *LanguageIdParams) (*LanguageId, error) {
+func (s *LanguageIdService) SubmitURL(ctx context.Context, params *LanguageIdUrlParams) (*LanguageId, error) {
 	if params.SourceConfig.Url == "" {
 		return nil, errors.New("url is required")
 	}

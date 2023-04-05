@@ -17,10 +17,11 @@ const (
 var (
 	testClient *Client
 
-	testJob             *Job
-	testVocab           *CustomVocabulary
-	testLanguageId      *LanguageId
-	testTopicExtraction *TopicExtraction
+	testJob               *Job
+	testVocab             *CustomVocabulary
+	testLanguageId        *LanguageId
+	test                  *TopicExtraction
+	testSentimentAnalysis *SentimentAnalysis
 )
 
 func TestMain(m *testing.M) {
@@ -30,12 +31,13 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	testClient = NewClient("02KIOegusQSxwLr7-GbA3pj939sgcXBtbFSevSERkDxZz1sdUZ-ktBGkHozlEVLrxvbhLJSf0K-QKUBRTYkqXpD2hCumI")
+	testClient = NewClient(os.Getenv("REV_AI_API_KEY"))
 	testJob = makeTestJob()
 	testVocab = makeTestVocab()
 	testLanguageId = makeTestLanguageId()
-	testTopicExtraction = makeTestTopicExtraction()
-	fmt.Println("sleeping for 1 minute to allow file to be processed") // honestly this looks fucking dumb, should probably change this
+	test = maketest()
+	testSentimentAnalysis = makeTestSentimentAnalysis()
+	fmt.Println("sleeping for 1 minute to allow file to be processed")
 	time.Sleep(1 * time.Minute)
 }
 
@@ -94,7 +96,7 @@ func makeTestLanguageId() *LanguageId {
 	return job
 }
 
-func makeTestTopicExtraction() *TopicExtraction {
+func maketest() *TopicExtraction {
 	data := getTestJsonData()
 
 	var transcript Transcript
@@ -117,6 +119,29 @@ func makeTestTopicExtraction() *TopicExtraction {
 	return job
 }
 
+func makeTestSentimentAnalysis() *SentimentAnalysis {
+	data := getTestJsonData()
+
+	var transcript Transcript
+	err := json.Unmarshal(data, &transcript)
+	if err != nil {
+		panic(err)
+	}
+
+	params := &SentimentAnalysisJsonParams{
+		Transcript: transcript,
+	}
+
+	ctx := context.Background()
+
+	job, err := testClient.SentimentAnalysis.SubmitTranscriptJson(ctx, params)
+	if err != nil {
+		panic(err)
+	}
+
+	return job
+}
+
 func getTestFile() *os.File {
 	f, err := os.Open(testFileName)
 	if err != nil {
@@ -127,7 +152,7 @@ func getTestFile() *os.File {
 }
 
 func getTestJsonData() []byte {
-	body, err := ioutil.ReadFile("./testdata/testtopicextraction.json")
+	body, err := ioutil.ReadFile("./testdata/test.json")
 	if err != nil {
 		panic(err)
 	}

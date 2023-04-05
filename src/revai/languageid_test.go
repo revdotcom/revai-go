@@ -65,7 +65,7 @@ func TestLanguageIdService_SubmitFileWithOption(t *testing.T) {
 }
 
 func TestLanguageIdService_SubmitURL(t *testing.T) {
-	params := &LanguageIdParams{
+	params := &LanguageIdUrlParams{
 		SourceConfig: &UrlConfig{
 			Url: testMediaURL,
 		},

@@ -26,8 +26,8 @@ type Monologue struct {
 // Element represents a Rev.ai element
 type Element struct {
 	Type       string  `json:"type"`
-	Value      string  `json:"value"`
-	Ts         float64 `json:"ts"`
+	Content    string  `json:"value"`
+	StartTs    float64 `json:"ts"`
 	EndTs      float64 `json:"end_ts"`
 	Confidence float64 `json:"confidence"`
 }

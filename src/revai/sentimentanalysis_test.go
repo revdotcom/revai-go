@@ -10,20 +10,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testService_SubmitPlainText(t *testing.T) {
+func TestSentimentAnalysisService_SubmitPlainText(t *testing.T) {
 	body, err := ioutil.ReadFile("./testdata/testtext.txt")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	params := &TopicExtractionPlainTextParams{
+	params := &SentimentAnalysisPlainTextParams{
 		Text: string(body),
 	}
 
 	ctx := context.Background()
 
-	newJob, err := testClient.TopicExtraction.SubmitPlainText(ctx, params)
+	newJob, err := testClient.SentimentAnalysis.SubmitPlainText(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
@@ -33,7 +33,7 @@ func testService_SubmitPlainText(t *testing.T) {
 	assert.Equal(t, "in_progress", newJob.Status, "response status should be in_progress")
 }
 
-func testService_SubmitJson(t *testing.T) {
+func TestSentimentAnalysisService_SubmitJson(t *testing.T) {
 	body, err := ioutil.ReadFile("./testdata/test.json")
 	if err != nil {
 		t.Error(err)
@@ -47,14 +47,14 @@ func testService_SubmitJson(t *testing.T) {
 		return
 	}
 
-	params := &TopicExtractionJsonParams{
+	params := &SentimentAnalysisJsonParams{
 		Metadata:   testMetadata,
 		Transcript: transcript,
 	}
 
 	ctx := context.Background()
 
-	newJob, err := testClient.TopicExtraction.SubmitTranscriptJson(ctx, params)
+	newJob, err := testClient.SentimentAnalysis.SubmitTranscriptJson(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
@@ -67,14 +67,14 @@ func testService_SubmitJson(t *testing.T) {
 	assert.Equal(t, "in_progress", newJob.Status, "response status should be in_progress")
 }
 
-func testService_Get(t *testing.T) {
-	params := &GetTopicExtractionParams{
-		ID: test.ID,
+func TestSentimentAnalysisService_Get(t *testing.T) {
+	params := &GetSentimentAnalysisParams{
+		ID: testSentimentAnalysis.ID,
 	}
 
 	ctx := context.Background()
 
-	newJob, err := testClient.TopicExtraction.Get(ctx, params)
+	newJob, err := testClient.SentimentAnalysis.Get(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
@@ -83,14 +83,14 @@ func testService_Get(t *testing.T) {
 	assert.NotNil(t, newJob, "new job should not be nil")
 }
 
-func testService_GetJobById(t *testing.T) {
-	params := &GetTopicExtractionParams{
-		ID: test.ID,
+func TestSentimentAnalysisService_GetJobById(t *testing.T) {
+	params := &GetSentimentAnalysisParams{
+		ID: testSentimentAnalysis.ID,
 	}
 
 	ctx := context.Background()
 
-	newJob, err := testClient.TopicExtraction.GetJobById(ctx, params)
+	newJob, err := testClient.SentimentAnalysis.GetJobById(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
@@ -99,8 +99,8 @@ func testService_GetJobById(t *testing.T) {
 	assert.NotNil(t, newJob.ID, "new job id should not be nil")
 }
 
-func testService_Delete(t *testing.T) {
-	deletableJob := maketest()
+func TestSentimentAnalysisService_Delete(t *testing.T) {
+	deletableJob := makeTestSentimentAnalysis()
 
 	params := &DeleteParams{
 		ID: deletableJob.ID,
@@ -109,7 +109,7 @@ func testService_Delete(t *testing.T) {
 
 	ctx := context.Background()
 
-	if job, err := testClient.TopicExtraction.Delete(ctx, params); err != nil {
+	if job, err := testClient.SentimentAnalysis.Delete(ctx, params); err != nil {
 		t.Error(err)
 		return
 	} else if job != nil {
@@ -118,12 +118,12 @@ func testService_Delete(t *testing.T) {
 	}
 }
 
-func testService_List(t *testing.T) {
+func TestSentimentAnalysisService_List(t *testing.T) {
 	params := &ListParams{}
 
 	ctx := context.Background()
 
-	jobs, err := testClient.TopicExtraction.List(ctx, params)
+	jobs, err := testClient.SentimentAnalysis.List(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
@@ -132,14 +132,14 @@ func testService_List(t *testing.T) {
 	assert.NotNil(t, jobs, "jobs should not be nil")
 }
 
-func testService_ListWithLimit(t *testing.T) {
+func TestSentimentAnalysisService_ListWithLimit(t *testing.T) {
 	params := &ListParams{
 		Limit: 2,
 	}
 
 	ctx := context.Background()
 
-	jobs, err := testClient.TopicExtraction.List(ctx, params)
+	jobs, err := testClient.SentimentAnalysis.List(ctx, params)
 	if err != nil {
 		t.Error(err)
 		return
