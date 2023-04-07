@@ -145,11 +145,6 @@ type NewURLJobParams struct {
 	Verbatim             bool                        `json:"verbatim,omitempty"`
 }
 
-type UrlConfig struct {
-	Url         string            `json:"url,omitempty"`
-	AuthHeaders map[string]string `json:"auth_headers,omitempty"`
-}
-
 // SubmitURL starts an asynchronous job to transcribe speech-to-text for a media file.
 // https://www.rev.ai/docs#operation/SubmitTranscriptionJob
 func (s *JobService) SubmitURL(ctx context.Context, params *NewURLJobParams) (*Job, error) {
@@ -224,13 +219,6 @@ func (s *JobService) Delete(ctx context.Context, params *DeleteParams) (*Job, er
 	}
 
 	return nil, nil
-}
-
-// ListParams specifies the optional query parameters to the
-// Most List methods.
-type ListParams struct {
-	Limit         int    `url:"limit,omitempty"`
-	StartingAfter string `url:"starting_after,omitempty"`
 }
 
 // List gets a list of transcription jobs submitted within the last 30 days

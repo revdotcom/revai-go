@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testService_SubmitPlainText(t *testing.T) {
+func TestTopicExtractionService_SubmitPlainText(t *testing.T) {
 	body, err := ioutil.ReadFile("./testdata/testtext.txt")
 	if err != nil {
 		t.Error(err)
@@ -33,8 +33,8 @@ func testService_SubmitPlainText(t *testing.T) {
 	assert.Equal(t, "in_progress", newJob.Status, "response status should be in_progress")
 }
 
-func testService_SubmitJson(t *testing.T) {
-	body, err := ioutil.ReadFile("./testdata/test.json")
+func TestTopicExtractionService_SubmitJson(t *testing.T) {
+	body, err := ioutil.ReadFile("./testdata/testtopicextraction.json")
 	if err != nil {
 		t.Error(err)
 		return
@@ -67,9 +67,9 @@ func testService_SubmitJson(t *testing.T) {
 	assert.Equal(t, "in_progress", newJob.Status, "response status should be in_progress")
 }
 
-func testService_Get(t *testing.T) {
+func TestTopicExtractionService_Get(t *testing.T) {
 	params := &GetTopicExtractionParams{
-		ID: test.ID,
+		ID: testTopicExtraction.ID,
 	}
 
 	ctx := context.Background()
@@ -83,9 +83,9 @@ func testService_Get(t *testing.T) {
 	assert.NotNil(t, newJob, "new job should not be nil")
 }
 
-func testService_GetJobById(t *testing.T) {
+func TestTopicExtractionService_GetJobById(t *testing.T) {
 	params := &GetTopicExtractionParams{
-		ID: test.ID,
+		ID: testTopicExtraction.ID,
 	}
 
 	ctx := context.Background()
@@ -99,8 +99,8 @@ func testService_GetJobById(t *testing.T) {
 	assert.NotNil(t, newJob.ID, "new job id should not be nil")
 }
 
-func testService_Delete(t *testing.T) {
-	deletableJob := maketest()
+func TestTopicExtractionService_Delete(t *testing.T) {
+	deletableJob := makeTestTopicExtraction()
 
 	params := &DeleteParams{
 		ID: deletableJob.ID,
@@ -118,7 +118,7 @@ func testService_Delete(t *testing.T) {
 	}
 }
 
-func testService_List(t *testing.T) {
+func TestTopicExtractionService_List(t *testing.T) {
 	params := &ListParams{}
 
 	ctx := context.Background()
@@ -132,7 +132,7 @@ func testService_List(t *testing.T) {
 	assert.NotNil(t, jobs, "jobs should not be nil")
 }
 
-func testService_ListWithLimit(t *testing.T) {
+func TestTopicExtractionService_ListWithLimit(t *testing.T) {
 	params := &ListParams{
 		Limit: 2,
 	}

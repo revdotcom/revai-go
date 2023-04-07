@@ -20,7 +20,7 @@ var (
 	testJob               *Job
 	testVocab             *CustomVocabulary
 	testLanguageId        *LanguageId
-	test                  *TopicExtraction
+	testTopicExtraction   *TopicExtraction
 	testSentimentAnalysis *SentimentAnalysis
 )
 
@@ -35,7 +35,7 @@ func setup() {
 	testJob = makeTestJob()
 	testVocab = makeTestVocab()
 	testLanguageId = makeTestLanguageId()
-	test = maketest()
+	testTopicExtraction = makeTestTopicExtraction()
 	testSentimentAnalysis = makeTestSentimentAnalysis()
 	fmt.Println("sleeping for 1 minute to allow file to be processed")
 	time.Sleep(1 * time.Minute)
@@ -96,7 +96,7 @@ func makeTestLanguageId() *LanguageId {
 	return job
 }
 
-func maketest() *TopicExtraction {
+func makeTestTopicExtraction() *TopicExtraction {
 	data := getTestJsonData()
 
 	var transcript Transcript

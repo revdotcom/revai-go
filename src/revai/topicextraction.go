@@ -19,7 +19,6 @@ type TopicExtraction struct {
 	Language      string    `json:"language,omitempty"`
 	CreatedOn     time.Time `json:"created_on,omitempty"`
 	Type          string    `json:"type,omitempty"`
-	Duration      string    `json:"processed_duration_seconds,omitempty"`
 	WordCount     int       `json:"word_count,omitempty"`
 	CallbackURL   string    `json:"callback_url,omitempty"`
 	Metadata      string    `json:"metadata,omitempty"`

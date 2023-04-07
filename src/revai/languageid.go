@@ -16,20 +16,22 @@ type LanguageIdService service
 
 // LanguageId represents a rev.ai asycn LanguageId.
 type LanguageId struct {
-	ID            string                `json:"id,omitempty"`
-	CreatedOn     time.Time             `json:"created_on,omitempty"`
-	Status        string                `json:"status,omitempty"`
-	Type          string                `json:"type,omitempty"`
-	Duration      float64               `json:"processed_duration_seconds,omitempty"`
-	Metadata      string                `json:"metadata,omitempty"`
-	CompletedOn   time.Time             `json:"completed_on,omitempty"`
-	MediaURL      string                `json:"media_url,omitempty"`
-	Failure       string                `json:"title,omitempty"`
-	FailureReason string                `json:"detail,omitempty"`
-	CurrentStatus string                `json:"current_value,omitempty"`
-	AllowedValues []string              `json:"allowed_values,omitempty"`
-	TopLanguage   string                `json:"top_language,omitempty"`
-	Confidences   []LanguageConfidences `json:"language_confidences,omitempty"`
+	ID                  string                `json:"id,omitempty"`
+	CreatedOn           time.Time             `json:"created_on,omitempty"`
+	Status              string                `json:"status,omitempty"`
+	Type                string                `json:"type,omitempty"`
+	Duration            float64               `json:"processed_duration_seconds,omitempty"`
+	Metadata            string                `json:"metadata,omitempty"`
+	CompletedOn         time.Time             `json:"completed_on,omitempty"`
+	MediaURL            string                `json:"media_url,omitempty"`
+	FailureTitle        string                `json:"title,omitempty"`
+	FailureReasonDetail string                `json:"detail,omitempty"`
+	Failure             string                `json:"failure,omitempty"`
+	FailureReason       string                `json:"failure_detail,omitempty"`
+	CurrentStatus       string                `json:"current_value,omitempty"`
+	AllowedValues       []string              `json:"allowed_values,omitempty"`
+	TopLanguage         string                `json:"top_language,omitempty"`
+	Confidences         []LanguageConfidences `json:"language_confidences,omitempty"`
 }
 
 type LanguageConfidences struct {
