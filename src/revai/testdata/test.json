@@ -1,0 +1,31 @@
+{
+    "monologues": [
+      {
+        "speaker": 1,
+        "elements": [
+          {
+            "type": "text",
+            "value": "Hello",
+            "ts": 0.5,
+            "end_ts": 1.5,
+            "confidence": 1
+          },
+          {
+            "type": "punct",
+            "value": " "
+          },
+          {
+            "type": "text",
+            "value": "World",
+            "ts": 1.75,
+            "end_ts": 2.85,
+            "confidence": 0.8
+          },
+          {
+            "type": "punct",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  }

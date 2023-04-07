@@ -20,8 +20,9 @@ type Caption struct {
 // GetCaptionParams specifies the parameters to the
 // CaptionService.Get method.
 type GetCaptionParams struct {
-	JobID  string
-	Accept string
+	JobID          string
+	Accept         string
+	SpeakerChannel *int
 }
 
 // Get returns the caption output for a transcription job.
@@ -34,7 +35,12 @@ func (s *CaptionService) Get(ctx context.Context, params *GetCaptionParams) (*Ca
 		accept = XSubripHeader
 	}
 
-	req, err := s.client.newRequest(http.MethodGet, urlPath, nil)
+	var speakerChannel interface{}
+	if params.SpeakerChannel != nil {
+		speakerChannel = *params.SpeakerChannel
+	}
+
+	req, err := s.client.newRequest(http.MethodGet, urlPath, speakerChannel)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating request %w", err)
 	}

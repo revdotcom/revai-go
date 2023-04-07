@@ -9,7 +9,7 @@ import (
 
 func TestTranscriptService_Get(t *testing.T) {
 	params := &GetTranscriptParams{
-		JobID: testJob.ID,
+		ID: testJob.ID,
 	}
 
 	ctx := context.Background()
@@ -25,7 +25,7 @@ func TestTranscriptService_Get(t *testing.T) {
 
 func TestTranscriptService_GetText(t *testing.T) {
 	params := &GetTranscriptParams{
-		JobID: testJob.ID,
+		ID: testJob.ID,
 	}
 
 	ctx := context.Background()

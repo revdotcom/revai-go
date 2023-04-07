@@ -26,8 +26,8 @@ type Monologue struct {
 // Element represents a Rev.ai element
 type Element struct {
 	Type       string  `json:"type"`
-	Value      string  `json:"value"`
-	Ts         float64 `json:"ts"`
+	Content    string  `json:"value"`
+	StartTs    float64 `json:"ts"`
 	EndTs      float64 `json:"end_ts"`
 	Confidence float64 `json:"confidence"`
 }
@@ -35,13 +35,13 @@ type Element struct {
 // GetTranscriptParams specifies the parameters to the
 // TranscriptService.Get method.
 type GetTranscriptParams struct {
-	JobID string
+	ID string
 }
 
 // Get returns the transcript for a completed transcription job in JSON format.
 // https://www.rev.ai/docs#operation/GetTranscriptById
 func (s *TranscriptService) Get(ctx context.Context, params *GetTranscriptParams) (*Transcript, error) {
-	urlPath := "/speechtotext/v1/jobs/" + params.JobID + "/transcript"
+	urlPath := "/speechtotext/v1/jobs/" + params.ID + "/transcript"
 
 	req, err := s.client.newRequest(http.MethodGet, urlPath, nil)
 	if err != nil {
@@ -66,7 +66,7 @@ type TextTranscript struct {
 // Get returns the transcript for a completed transcription job in text format.
 // https://www.rev.ai/docs#operation/GetTranscriptById
 func (s *TranscriptService) GetText(ctx context.Context, params *GetTranscriptParams) (*TextTranscript, error) {
-	urlPath := "/speechtotext/v1/jobs/" + params.JobID + "/transcript"
+	urlPath := "/speechtotext/v1/jobs/" + params.ID + "/transcript"
 
 	req, err := s.client.newRequest(http.MethodGet, urlPath, nil)
 	if err != nil {

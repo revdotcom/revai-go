@@ -24,6 +24,9 @@ const (
 	TextVTTHeader           = "text/vtt"
 	TextPlainHeader         = "text/plain"
 	RevTranscriptJSONHeader = "application/vnd.rev.transcript.v1.0+json"
+	RevTopicJSONHeader      = "application/vnd.rev.topic.v1.0+json"
+	RevSentimentJSONHeader  = "application/vnd.rev.sentiment.v1.0+json"
+	RevLanguageIdJSONHeader = "application/vnd.rev.languageid.v1.0+json"
 )
 
 type service struct {
@@ -41,12 +44,15 @@ type Client struct {
 	common service
 
 	// Services used for talking to different parts of the Rev.ai API.
-	Job              *JobService
-	Account          *AccountService
-	Caption          *CaptionService
-	Transcript       *TranscriptService
-	CustomVocabulary *CustomVocabularyService
-	Stream           *StreamService
+	Job               *JobService
+	Account           *AccountService
+	Caption           *CaptionService
+	Transcript        *TranscriptService
+	LanguageId        *LanguageIdService
+	TopicExtraction   *TopicExtractionService
+	SentimentAnalysis *SentimentAnalysisService
+	CustomVocabulary  *CustomVocabularyService
+	Stream            *StreamService
 }
 
 type ClientOption func(*Client)
@@ -93,6 +99,9 @@ func NewClient(apiKey string, opts ...ClientOption) *Client {
 	c.Account = (*AccountService)(&c.common)
 	c.Caption = (*CaptionService)(&c.common)
 	c.Transcript = (*TranscriptService)(&c.common)
+	c.LanguageId = (*LanguageIdService)(&c.common)
+	c.TopicExtraction = (*TopicExtractionService)(&c.common)
+	c.SentimentAnalysis = (*SentimentAnalysisService)(&c.common)
 	c.CustomVocabulary = (*CustomVocabularyService)(&c.common)
 	c.Stream = (*StreamService)(&c.common)
 

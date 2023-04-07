@@ -18,18 +18,23 @@ type JobService service
 
 // Job represents a rev.ai asycn job.
 type Job struct {
-	ID              string    `json:"id"`
-	CreatedOn       time.Time `json:"created_on"`
-	Name            string    `json:"name"`
-	Status          string    `json:"status"`
-	Type            string    `json:"type"`
-	Metadata        string    `json:"metadata,omitempty"`
-	CompletedOn     time.Time `json:"completed_on,omitempty"`
-	CallbackURL     string    `json:"callback_url,omitempty"`
-	DurationSeconds float32   `json:"duration_seconds,omitempty"`
-	MediaURL        string    `json:"media_url,omitempty"`
-	Failure         string    `json:"failure,omitempty"`
-	FailureDetail   string    `json:"failure_detail,omitempty"`
+	ID              string       `json:"id"`
+	CreatedOn       time.Time    `json:"created_on"`
+	Name            string       `json:"name"`
+	Status          string       `json:"status"`
+	Type            string       `json:"type"`
+	Language        string       `json:"language"`
+	Metadata        string       `json:"metadata,omitempty"`
+	CompletedOn     time.Time    `json:"completed_on,omitempty"`
+	CallbackURL     string       `json:"callback_url,omitempty"`
+	DurationSeconds float32      `json:"duration_seconds,omitempty"`
+	MediaURL        string       `json:"media_url,omitempty"`
+	FailureParam    JobFailParam `json:"parameter,omitempty"`
+	FailureDetail   string       `json:"error,omitempty"`
+}
+
+type JobFailParam struct {
+	FailureDetail []string `json:"media_url,omitempty"`
 }
 
 // NewFileJobParams specifies the parameters to the
@@ -43,16 +48,21 @@ type NewFileJobParams struct {
 // JobOptions specifies the options to the
 // JobService.SubmitFile method.
 type JobOptions struct {
+	Language             string                      `json:"language,omitempty"`
+	NotificationConfig   *UrlConfig                  `json:"notification_config,omitempty"`
+	CallbackURL          string                      `json:"callback_url,omitempty"`
 	SkipDiarization      bool                        `json:"skip_diarization,omitempty"`
 	SkipPunctuation      bool                        `json:"skip_punctuation,omitempty"`
+	SkipPostProcessing   bool                        `json:"skip_postprocessing,omitempty"`
 	RemoveDisfluencies   bool                        `json:"remove_disfluencies,omitempty"`
+	RemoveAtmospherics   bool                        `json:"remove_atmospherics,omitempty"`
 	FilterProfanity      bool                        `json:"filter_profanity,omitempty"`
 	SpeakerChannelsCount int                         `json:"speaker_channels_count,omitempty"`
 	Metadata             string                      `json:"metadata,omitempty"`
-	CallbackURL          string                      `json:"callback_url,omitempty"`
-	CustomVocabularies   []JobOptionCustomVocabulary `json:"custom_vocabularies"`
-	Language             string                      `json:"language,omitempty"`
+	CustomVocabularyId   string                      `json:"custom_vocabulary_id,omitempty"`
+	CustomVocabularies   []JobOptionCustomVocabulary `json:"custom_vocabularies,omitempty"`
 	Transcriber          string                      `json:"transcriber,omitempty"`
+	Verbatim             bool                        `json:"verbatim,omitempty"`
 }
 
 type JobOptionCustomVocabulary struct {
@@ -116,23 +126,30 @@ func (s *JobService) SubmitFile(ctx context.Context, params *NewFileJobParams) (
 // NewURLJobParams specifies the parameters to the
 // JobService.SubmitURL method.
 type NewURLJobParams struct {
-	MediaURL             string                      `json:"media_url"`
+	Language             string                      `json:"language,omitempty"`
+	MediaURL             *string                     `json:"media_url,omitempty"`
+	SourceConfig         *UrlConfig                  `json:"source_config,omitempty"`
+	NotificationConfig   *UrlConfig                  `json:"notification_config,omitempty"`
 	SkipDiarization      bool                        `json:"skip_diarization,omitempty"`
 	SkipPunctuation      bool                        `json:"skip_punctuation,omitempty"`
 	RemoveDisfluencies   bool                        `json:"remove_disfluencies,omitempty"`
+	RemoveAtmospherics   bool                        `json:"remove_atmospherics,omitempty"`
 	FilterProfanity      bool                        `json:"filter_profanity,omitempty"`
 	SpeakerChannelsCount int                         `json:"speaker_channels_count,omitempty"`
 	Metadata             string                      `json:"metadata,omitempty"`
 	CallbackURL          string                      `json:"callback_url,omitempty"`
-	CustomVocabularies   []JobOptionCustomVocabulary `json:"custom_vocabularies"`
+	CustomVocabularyId   string                      `json:"custom_vocabulary_id,omitempty"`
+	CustomVocabularies   []JobOptionCustomVocabulary `json:"custom_vocabularies,omitempty"`
+	DeleteSeconds        int                         `json:"delete_after_seconds,omitempty"`
 	Transcriber          string                      `json:"transcriber,omitempty"`
+	Verbatim             bool                        `json:"verbatim,omitempty"`
 }
 
 // SubmitURL starts an asynchronous job to transcribe speech-to-text for a media file.
 // https://www.rev.ai/docs#operation/SubmitTranscriptionJob
 func (s *JobService) SubmitURL(ctx context.Context, params *NewURLJobParams) (*Job, error) {
-	if params.MediaURL == "" {
-		return nil, errors.New("media url is required")
+	if params.SourceConfig.Url == "" {
+		return nil, errors.New("url is required")
 	}
 
 	req, err := s.client.newRequest(http.MethodPost, "/speechtotext/v1/jobs", params)
@@ -178,42 +195,36 @@ func (s *JobService) Get(ctx context.Context, params *GetJobParams) (*Job, error
 
 // DeleteJobParams specifies the parameters to the
 // JobService.Delete method.
-type DeleteJobParams struct {
+type DeleteParams struct {
 	ID string
 }
 
 // Delete deletes a transcription job
 // https://www.rev.ai/docs#operation/DeleteJobById
-func (s *JobService) Delete(ctx context.Context, params *DeleteJobParams) error {
+func (s *JobService) Delete(ctx context.Context, params *DeleteParams) (*Job, error) {
 	if params.ID == "" {
-		return errors.New("job id is required")
+		return nil, errors.New("job id is required")
 	}
 
 	urlPath := "/speechtotext/v1/jobs/" + params.ID
 
 	req, err := s.client.newRequest(http.MethodDelete, urlPath, nil)
 	if err != nil {
-		return fmt.Errorf("failed creating request %w", err)
+		return nil, fmt.Errorf("failed creating request %w", err)
 	}
 
-	if err := s.client.doJSON(ctx, req, nil); err != nil {
-		return err
+	var j Job
+	if err := s.client.doJSON(ctx, req, &j); err != nil {
+		return nil, err
 	}
 
-	return nil
-}
-
-// ListJobParams specifies the optional query parameters to the
-// JobService.List method.
-type ListJobParams struct {
-	Limit         int    `url:"limit,omitempty"`
-	StartingAfter string `url:"starting_after,omitempty"`
+	return nil, nil
 }
 
 // List gets a list of transcription jobs submitted within the last 30 days
 // in reverse chronological order up to the provided limit number of jobs per call.
 // https://www.rev.ai/docs#operation/GetListOfJobs
-func (s *JobService) List(ctx context.Context, params *ListJobParams) ([]*Job, error) {
+func (s *JobService) List(ctx context.Context, params *ListParams) ([]*Job, error) {
 	urlPath := "/speechtotext/v1/jobs"
 
 	req, err := s.client.newRequest(http.MethodGet, urlPath, params)

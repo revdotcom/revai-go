@@ -46,7 +46,7 @@ func TestCustomVocabularyService_Get(t *testing.T) {
 }
 
 func TestCustomVocabularyService_List(t *testing.T) {
-	params := &ListCustomVocabularyParams{}
+	params := &ListParams{}
 
 	ctx := context.Background()
 
@@ -62,7 +62,7 @@ func TestCustomVocabularyService_List(t *testing.T) {
 func TestCustomVocabularyService_Delete(t *testing.T) {
 	deletableVocab := makeTestVocab()
 
-	params := &DeleteCustomVocabularyParams{
+	params := &DeleteParams{
 		ID: deletableVocab.ID,
 	}
 

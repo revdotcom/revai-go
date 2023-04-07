@@ -25,9 +25,10 @@ type CustomVocabulary struct {
 // CreateCustomVocabularyParams specifies the parameters to the
 // CustomVocabularyService.Create method.
 type CreateCustomVocabularyParams struct {
-	CustomVocabularies []Phrase `json:"custom_vocabularies"`
-	Metadata           string   `json:"metadata,omitempty"`
-	CallbackURL        string   `json:"callback_url,omitempty"`
+	CustomVocabularies []Phrase   `json:"custom_vocabularies"`
+	Metadata           string     `json:"metadata,omitempty"`
+	SourceConfig       *UrlConfig `json:"source_config,omitempty"`
+	NotificationConfig *UrlConfig `json:"notification_config,omitempty"`
 }
 
 type Phrase struct {
@@ -76,15 +77,9 @@ func (s *CustomVocabularyService) Get(ctx context.Context, params *GetCustomVoca
 	return &vocabulary, nil
 }
 
-// ListCustomVocabularyParams specifies the parameters to the
-// CustomVocabularyService.List method.
-type ListCustomVocabularyParams struct {
-	Limit int `url:"limit,omitempty"`
-}
-
 // List gets a list of most recent custom vocabularies' processing information
 // https://www.rev.ai/docs/streaming#operation/GetCustomVocabularies
-func (s *CustomVocabularyService) List(ctx context.Context, params *ListCustomVocabularyParams) ([]*CustomVocabulary, error) {
+func (s *CustomVocabularyService) List(ctx context.Context, params *ListParams) ([]*CustomVocabulary, error) {
 	urlPath := "/speechtotext/v1/vocabularies"
 
 	req, err := s.client.newRequest(http.MethodGet, urlPath, params)
@@ -100,15 +95,9 @@ func (s *CustomVocabularyService) List(ctx context.Context, params *ListCustomVo
 	return vocabularies, nil
 }
 
-// DeleteCustomVocabularyParams specifies the parameters to the
-// CustomVocabularyService.Delete method.
-type DeleteCustomVocabularyParams struct {
-	ID string
-}
-
 // Delete deletes the custom vocabulary.
 // https://www.rev.ai/docs/streaming#operation/DeleteCustomVocabulary
-func (s *CustomVocabularyService) Delete(ctx context.Context, params *DeleteCustomVocabularyParams) error {
+func (s *CustomVocabularyService) Delete(ctx context.Context, params *DeleteParams) error {
 	urlPath := "/speechtotext/v1/vocabularies/" + params.ID
 
 	req, err := s.client.newRequest(http.MethodDelete, urlPath, nil)
