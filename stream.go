@@ -166,20 +166,40 @@ func (c *Conn) Close() error {
 // DialStreamParams specifies the parameters to the
 // StreamService.Dial method.
 type DialStreamParams struct {
-	ContentType        string
-	Metadata           string
-	FilterProfanity    bool
-	RemoveDisfluencies bool
-	CustomVocabularyID string
+	ContentType                   string
+	Language                      string
+	Metadata                      string
+	FilterProfanity               bool
+	RemoveDisfluencies            bool
+	CustomVocabularyID            string
+	DeleteAfterSeconds            int
+	DetailedPartials              bool
+	StartTimestamp                float64
+	MaximumSegmentDurationSeconds int
+	Transcriber                   string
+	SpeakerSwitchDetection        bool
+	SkipPostProcessing            bool
+	Priority                      string
+	MaximumWaitTimeForConnection  int
 }
 
 type dialStreamParams struct {
-	ContentType        string `url:"content_type"`
-	Metadata           string `url:"metadata,omitempty"`
-	RemoveDisfluencies bool   `url:"remove_disfluencies,omitempty"`
-	FilterProfanity    bool   `url:"filter_profanity"`
-	CustomVocabularyID string `url:"custom_vocabulary_id"`
-	AccessToken        string `url:"access_token"`
+	ContentType                   string  `url:"content_type"`
+	Language                      string  `url:"language,omitempty"`
+	Metadata                      string  `url:"metadata,omitempty"`
+	FilterProfanity               bool    `url:"filter_profanity"`
+	RemoveDisfluencies            bool    `url:"remove_disfluencies,omitempty"`
+	CustomVocabularyID            string  `url:"custom_vocabulary_id"`
+	DeleteAfterSeconds            int     `url:"delete_after_seconds,omitempty"`
+	DetailedPartials              bool    `url:"detailed_partials,omitempty"`
+	StartTimestamp                float64 `url:"start_ts,omitempty"`
+	MaximumSegmentDurationSeconds int     `url:"max_segment_duration_seconds,omitempty"`
+	Transcriber                   string  `url:"transcriber,omitempty"`
+	SpeakerSwitchDetection        bool    `url:"enable_speaker_switch,omitempty"`
+	SkipPostProcessing            bool    `url:"skip_postprocessing,omitempty"`
+	Priority                      string  `url:"priority,omitempty"`
+	MaximumWaitTimeForConnection  int     `url:"max_connection_wait_seconds,omitempty"`
+	AccessToken                   string  `url:"access_token"`
 }
 
 // Dial dials a WebSocket request to the Rev.ai Streaming api.
@@ -268,12 +288,22 @@ func (s *StreamService) streamURL(params *DialStreamParams) (*url.URL, error) {
 	rel := &url.URL{Scheme: "wss", Path: "/speechtotext/v1/stream", Host: s.client.BaseURL.Host}
 
 	p := &dialStreamParams{
-		AccessToken:        s.client.APIKey,
-		ContentType:        params.ContentType,
-		Metadata:           params.Metadata,
-		FilterProfanity:    params.FilterProfanity,
-		RemoveDisfluencies: params.RemoveDisfluencies,
-		CustomVocabularyID: params.CustomVocabularyID,
+		AccessToken:                   s.client.APIKey,
+		ContentType:                   params.ContentType,
+		Language:                      params.Language,
+		Metadata:                      params.Metadata,
+		FilterProfanity:               params.FilterProfanity,
+		RemoveDisfluencies:            params.RemoveDisfluencies,
+		CustomVocabularyID:            params.CustomVocabularyID,
+		DeleteAfterSeconds:            params.DeleteAfterSeconds,
+		DetailedPartials:              params.DetailedPartials,
+		StartTimestamp:                params.StartTimestamp,
+		MaximumSegmentDurationSeconds: params.MaximumSegmentDurationSeconds,
+		Transcriber:                   params.Transcriber,
+		SpeakerSwitchDetection:        params.SpeakerSwitchDetection,
+		SkipPostProcessing:            params.SkipPostProcessing,
+		Priority:                      params.Priority,
+		MaximumWaitTimeForConnection:  params.MaximumWaitTimeForConnection,
 	}
 
 	v, err := query.Values(p)
